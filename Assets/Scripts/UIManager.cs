@@ -34,21 +34,51 @@ public class UIManager : MonoBehaviour
     {
         InitPlayers();
         InitUI();
-        StartCoroutine(StartCountdown());
+
+        if (PhotonManager.Instance.isAIMatch)
+        {
+            StartCoroutine(StartCountdown());
+        }
+        else if (PhotonNetwork.IsMasterClient)
+        {
+            RPCManager.Instance.SendStartCountdown();
+        }
+
+
 
     }
 
     void InitPlayers()
     {
-        // Real player (Player 1) instantiated using Photon
-        player1Obj = PhotonNetwork.Instantiate("Player1", player1SpawnPoint.position + new Vector3(0, 0.45f, 0), Quaternion.identity);
-        Camera.main.GetComponent<CameraController>().player1 = player1Obj.transform;
-        diceRoller[0].playerObject = player1Obj.transform;
+        if (PhotonManager.Instance.isAIMatch)
+        {
+            // AI Match: Player 1 (real), Player 2 (bot)
+            player1Obj = PhotonNetwork.Instantiate("Player1", player1SpawnPoint.position + new Vector3(0, 0.45f, 0), Quaternion.identity);
+            Camera.main.GetComponent<CameraController>().player1 = player1Obj.transform;
+            diceRoller[0].playerObject = player1Obj.transform;
 
-        // Bot (Player 2) instantiated locally
-        player2Obj = Instantiate(player2Prefab, player2SpawnPoint.position + new Vector3(0, 0.45f, 0), Quaternion.identity);
-        diceRoller[1].playerObject = player2Obj.transform;
+            player2Obj = Instantiate(player2Prefab, player2SpawnPoint.position + new Vector3(0, 0.45f, 0), Quaternion.identity);
+            Camera.main.GetComponent<CameraController>().player2 = player2Obj.transform;
+            diceRoller[1].playerObject = player2Obj.transform;
+        }
+        else
+        {
+            // Multiplayer match: decide player prefab based on ActorNumber
+            if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
+            {
+                player1Obj = PhotonNetwork.Instantiate("Player1", player1SpawnPoint.position + new Vector3(0, 0.45f, 0), Quaternion.identity);
+                Camera.main.GetComponent<CameraController>().player1 = player1Obj.transform;
+                diceRoller[0].playerObject = player1Obj.transform;
+            }
+            else if (PhotonNetwork.LocalPlayer.ActorNumber == 2)
+            {
+                player2Obj = PhotonNetwork.Instantiate("Player2", player2SpawnPoint.position + new Vector3(0, 0.45f, 0), Quaternion.identity);
+                Camera.main.GetComponent<CameraController>().player2 = player2Obj.transform;
+                diceRoller[1].playerObject = player2Obj.transform;
+            }
+        }
     }
+
 
 
     public void SetPlayerThroughDice(DiceRoller diceRoller, int diceID)
@@ -72,26 +102,35 @@ public class UIManager : MonoBehaviour
         countdownText.text = "";
     }
 
-    IEnumerator StartCountdown()
+    public IEnumerator StartCountdown()
     {
-        countdownText.gameObject.transform.parent.gameObject.SetActive(true);
-        countdownText.text = "3";
-        yield return new WaitForSeconds(1f);
+        Transform container = countdownText.transform.parent;
+        container.gameObject.SetActive(true);
 
-        countdownText.text = "2";
-        yield return new WaitForSeconds(1f);
+        string[] countdownSteps = { "3", "2", "1", "GO!" };
 
-        countdownText.text = "1";
-        yield return new WaitForSeconds(1f);
+        foreach (string step in countdownSteps)
+        {
+            countdownText.text = step;
+            countdownText.color = new Color(1, 1, 1, 0); // transparent
 
-        countdownText.text = "GO!";
-        yield return new WaitForSeconds(1f);
+            // Scale pop animation
+            countdownText.transform.localScale = Vector3.zero;
+            countdownText.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
 
-        countdownText.gameObject.transform.parent.gameObject.SetActive(false);
+            // Fade in
+            countdownText.DOFade(1f, 0.3f);
+
+            yield return new WaitForSeconds(1f);
+        }
+
+        // Fade out and scale down after "GO!"
+        countdownText.DOFade(0f, 0.3f);
+        countdownText.transform.DOScale(Vector3.zero, 0.3f);
+        yield return new WaitForSeconds(0.4f);
+
+        container.gameObject.SetActive(false);
         countdownText.text = "";
-
-        // Here you can trigger movement start
-        // e.g., player1Obj.GetComponent<PlayerController>().StartMoving();
     }
 
     // Optional: update slider progress
@@ -124,7 +163,11 @@ public class UIManager : MonoBehaviour
         defeatPanel.SetActive(true); // example
         GameManager.Instance.BackToLobby();
     }
-    
+    public void UpdateDiceFace(int diceID, int faceIndex)
+    {
+        diceRoller[diceID - 1].diceImage.sprite = diceRoller[diceID - 1].diceFaces[faceIndex];
+    }
+
 
 
 }

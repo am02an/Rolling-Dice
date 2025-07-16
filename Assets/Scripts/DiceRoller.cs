@@ -4,6 +4,7 @@ using TMPro;
 using System.Collections;
 using DG.Tweening;
 using System.Collections.Generic;
+using Photon.Pun;
 
 public class DiceRoller : MonoBehaviour
 {
@@ -24,6 +25,10 @@ public class DiceRoller : MonoBehaviour
     public bool isAiControlled = false;
 
     public System.Action<int> OnRollComplete;
+    private PhotonView pv;
+    public int actorNumber;
+    public bool isMine;
+
 
     private bool isRolling = false;
     private Tween arrowTween;
@@ -36,12 +41,13 @@ public class DiceRoller : MonoBehaviour
     private CameraController cameraController;
     private void Start()
     {
-        // Existing setup...
         isAiControlled = (DiceID == 2 && PhotonManager.Instance.isAIMatch);
+
         highlightObject?.SetActive(false);
         arrowObject?.gameObject.SetActive(false);
 
         cameraController = Camera.main.GetComponent<CameraController>();
+        pv = GetComponent<PhotonView>();
     }
 
 
@@ -50,18 +56,18 @@ public class DiceRoller : MonoBehaviour
     /// </summary>
     public void SetInteractable(bool interactable)
     {
+       // Debug.Log($"[Dice {DiceID}] Interactable = {interactable} | IsMine = {PhotonNetwork.LocalPlayer.ActorNumber == actorNumber}");
+
         rollButton.interactable = interactable && !isAiControlled;
         diceImage.color = interactable ? Color.white : new Color(1, 1, 1, 0.4f);
 
-        // Highlight and arrow visuals
         highlightObject?.SetActive(interactable);
         arrowObject?.gameObject.SetActive(interactable);
 
-        if (interactable)
-            StartArrowTween();
-        else
-            StopArrowTween();
+        if (interactable) StartArrowTween();
+        else StopArrowTween();
     }
+
 
     /// <summary>
     /// Call to start the dice roll logic.
@@ -87,19 +93,31 @@ public class DiceRoller : MonoBehaviour
     public void RollDiceButton()
     {
         if (isRolling) return;
-
         int value = Random.Range(1, 7);
-        StartCoroutine(RollRoutine(value));
+
+        if (!PhotonManager.Instance.isAIMatch && PhotonNetwork.InRoom)
+        {
+            RPCManager.Instance.RPC_StartRoll(DiceID,value); // ✅ Multiplayer
+        }
+        else
+        {
+            StartCoroutine(RollRoutine(value)); // ✅ Local (AI or offline)
+        }
+
     }
 
     private IEnumerator AIRollRoutine()
     {
         yield return new WaitForSeconds(Random.Range(1f, 1.8f));
         int aiValue = Random.Range(1, 7);
-        yield return RollRoutine(aiValue);
+
+        if (PhotonNetwork.InRoom)
+            RPCManager.Instance.SendDiceRoll(DiceID, aiValue);
+        else
+            yield return RollRoutine(aiValue);
     }
 
-    private IEnumerator RollRoutine(int value)
+    public IEnumerator RollRoutine(int value)
     {
         isRolling = true;
         float timer = 0f;
@@ -116,6 +134,10 @@ public class DiceRoller : MonoBehaviour
         }
 
         diceImage.sprite = diceFaces[value - 1];
+        if (PhotonNetwork.InRoom && !PhotonManager.Instance.isAIMatch)
+        {
+            RPCManager.Instance.photonView.RPC("RPC_ShowDiceResult", RpcTarget.Others, DiceID, value);
+        }
         diceImage.transform.DOKill();
         diceImage.transform.localScale = Vector3.one;
         diceImage.transform.DOPunchScale(Vector3.one * 0.3f, 0.3f, 8, 0.7f);
@@ -133,14 +155,37 @@ public class DiceRoller : MonoBehaviour
 
         isRolling = false;
         OnRollComplete?.Invoke(value);
-
         turnCompletedCount++;
         if (turnCompletedCount >= 2 && cameraController != null)
         {
             cameraController.MoveCameraAfterTurn();
             turnCompletedCount = 0;
         }
+
+        // Let GameManager know that this player finished their full turn
+        // Call this after dice roll and movement complete
+        if (!PhotonManager.Instance.isAIMatch && !isAiControlled)
+        {
+            if (PhotonNetwork.LocalPlayer.ActorNumber == GameManager.Instance.currentTurnActorNumber)
+            {
+                Debug.Log("turn cane");
+                //StartCoroutine(NotifyTurnEndAfterDelay(GameManager.Instance.turnDelay));
+            }
+        }
     }
+    private bool hasNotifiedTurnEnd = false;
+    public void SetFinalSprite(int value)
+    {
+        diceImage.sprite = diceFaces[value - 1];
+    }
+
+    private IEnumerator NotifyTurnEndAfterDelay(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        GameManager.Instance.OnDiceTurnComplete();
+        hasNotifiedTurnEnd = false; // Reset for next roll
+    }
+  
 
     private IEnumerator MovePlayerRoutine(int diceValue)
     {
@@ -176,21 +221,22 @@ public class DiceRoller : MonoBehaviour
         {
             Debug.Log("Player reached the final tile!");
 
-            // Show Finish UI
             TileAbility ability = tilePoints[currentTileIndex].GetComponent<TileAbility>();
             if (ability != null && ability.finish != null)
                 ability.finish.SetActive(true);
 
             UIManager.Instance.UpdatePlayerProgress(DiceID, currentTileIndex, tilePoints.Count);
 
-            // Show Result UI
-            if (DiceID == 1)
-                UIManager.Instance.ShowVictory(); // Replace with your method
-            else if (DiceID == 2)
-                UIManager.Instance.ShowDefeat(); // Replace with your method
+            // ✅ Call RPC for result
+            if (PhotonNetwork.InRoom)
+            {
+                RPCManager.Instance.photonView.RPC("RPC_ShowGameResult", RpcTarget.All, DiceID);
+            }
 
             yield break;
         }
+
+
 
         // 🔁 Ability Movement (if not on final tile)
         yield return StartCoroutine(HandleAbilityMovement());

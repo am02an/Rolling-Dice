@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using UnityEngine.SceneManagement;
@@ -18,7 +18,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     [Header("Selection")]
     public Image player2Image;
-    public List<Sprite> opponentSprites; // Assign 5�7 sprites in Inspector
+    public List<Sprite> opponentSprites; // Assign 5–7 sprites in Inspector
     public float spriteChangeInterval = 0.3f;
     public bool isAIMatch;
     private Coroutine characterCycleCoroutine;
@@ -29,6 +29,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     private bool isSearching = false;
     private Vector2 startPos;
+    public bool IsMasterClient;
+    public bool IsOtherPlayer;
 
 
     private void Awake()
@@ -46,7 +48,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     public void StartMatch()
     {
-       
+        StartButton.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.OutBack);
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.ClickSound);
 
         if (PhotonNetwork.IsConnected && PhotonNetwork.IsConnectedAndReady && PhotonNetwork.Server == ServerConnection.MasterServer)
         {
@@ -76,16 +79,59 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     }
 
 
+
     public override void OnConnectedToMaster()
     {
         Debug.Log("Connected to Photon");
 
-        // Ensure the button starts hidden
-        StartButton.transform.localScale = Vector3.zero;
-        StartButton.gameObject.SetActive(true);
+        // If StartButton is not assigned in Inspector, try to find it in scene
+        if (StartButton == null)
+        {
+            // In Awake or Start
+            StartButton = GameObject.FindGameObjectWithTag("StartButton"); // Make sure it's tagged
 
-        // Tween scale up with a bounce
+
+            if (StartButton != null)
+            {
+                StartButton.GetComponent<Button>().onClick.AddListener(StartMatch);
+            }
+            else
+            {
+                Debug.LogWarning("StartButton (Button_Play) not found in the scene.");
+                return; // Exit if button is not found
+            }
+        }
+
+        StartButton.transform.localScale = Vector3.zero;
+        //StartButton.SetActive(true);
+
+        // Animate in
         StartButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+    }
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        Debug.Log($"Player {otherPlayer.NickName} left the room.");
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            DeclareVictoryToRemainingPlayer();
+        }
+    }
+
+    /// <summary>
+    /// Declares victory for the player still in the room.
+    /// </summary>
+    private void DeclareVictoryToRemainingPlayer()
+    {
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
+        {
+            // Only one player left – show Victory
+            UIManager.Instance.ShowVictory();  // Make sure your UIManager has this method
+        }
+        else
+        {
+            Debug.Log("More than one player still in room. No automatic victory.");
+        }
     }
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
@@ -95,9 +141,17 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         Debug.Log("Joined Room: waiting for players...");
+
+        // Determine player role
+        IsMasterClient = PhotonNetwork.IsMasterClient;
+        IsOtherPlayer = !PhotonNetwork.IsMasterClient;
+
+        Debug.Log("You are " + (IsMasterClient ? "Master Client" : "Other Player"));
+
         StartCoroutine(UIUtils.FadeCanvasGroup(myPanelCanvasGroup, 1f, 0.5f, true));
         StartCoroutine(WaitForOpponent());
     }
+
 
     private IEnumerator CycleOpponentImages()
     {
@@ -110,63 +164,75 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         }
     }
 
+   public bool allowAIMatch = true; // Set this from Inspector or code
+
     private IEnumerator WaitForOpponent()
     {
-        isSearching = true;
-        startPos = player2Image.rectTransform.anchoredPosition;
-
-        // Start cycling character images
-        characterCycleCoroutine = StartCoroutine(CycleOpponentImages());
-
-        float timer = 0f;
-        float timeLeft = matchmakingTimeout;
-
-        while (PhotonNetwork.CurrentRoom.PlayerCount < 2 && timer < matchmakingTimeout)
+        while (true) // Loop to retry until opponent is found or AI fallback
         {
-            timer += Time.deltaTime;
-            timeLeft = Mathf.Max(0f, matchmakingTimeout - timer);
+            isSearching = true;
+            startPos = player2Image.rectTransform.anchoredPosition;
 
-            // Countdown text
-            startTimeText.text = $"Searching for player... <color=#00FF00>{Mathf.FloorToInt(timeLeft)}s</color>";
+            // Start cycling character images
+            characterCycleCoroutine = StartCoroutine(CycleOpponentImages());
 
+            float timer = 0f;
+            float timeLeft = matchmakingTimeout;
 
+            while (PhotonNetwork.CurrentRoom.PlayerCount < 2 && timer < matchmakingTimeout)
+            {
+                timer += Time.deltaTime;
+                timeLeft = Mathf.Max(0f, matchmakingTimeout - timer);
+                startTimeText.text = $"Searching for player... <color=#00FF00>{Mathf.FloorToInt(timeLeft)}s</color>";
 
-            // Motion (left/right)
-            float offset = Mathf.PingPong(Time.time * moveSpeed, moveRange);
-            player2Image.rectTransform.anchoredPosition = startPos + new Vector2(offset, 0);
+                // Animate opponent image
+                float offset = Mathf.PingPong(Time.time * moveSpeed, moveRange);
+                player2Image.rectTransform.anchoredPosition = startPos + new Vector2(offset, 0);
 
-            yield return null;
-        }
+                yield return null;
+            }
 
-        isSearching = false;
+            isSearching = false;
 
-        // Stop cycling images
-        if (characterCycleCoroutine != null)
-            StopCoroutine(characterCycleCoroutine);
+            if (characterCycleCoroutine != null)
+                StopCoroutine(characterCycleCoroutine);
 
-        // Smoothly stop motion and lock final character
-        yield return StartCoroutine(SmoothStopPlayerImage());
+            yield return StartCoroutine(SmoothStopPlayerImage());
 
-        // Pick a final sprite to stop on (optional)
-        int finalIndex = UnityEngine.Random.Range(0, opponentSprites.Count);
-        player2Image.sprite = opponentSprites[finalIndex];
+            int finalIndex = UnityEngine.Random.Range(0, opponentSprites.Count);
+            player2Image.sprite = opponentSprites[finalIndex];
 
-        if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
-        {
-            isAIMatch = false;
-            startTimeText.text = "Player found!";
-            yield return new WaitForSeconds(2f);
-            PhotonNetwork.LoadLevel("MainScene");
-        }
-        else
-        {
-            isAIMatch = true;
-            startTimeText.text = "No player found. Starting with bot...";
-            PlayerPrefs.SetInt("PlayWithBot", 1);
-            yield return new WaitForSeconds(2f);
-            PhotonNetwork.LoadLevel("MainScene");
+            if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
+            {
+                isAIMatch = false;
+                startTimeText.text = "Player found!";
+                yield return new WaitForSeconds(2f);
+                PhotonNetwork.LoadLevel("MainScene");
+                yield break;
+            }
+            else if (allowAIMatch)
+            {
+                // ✅ AI Fallback
+                isAIMatch = true;
+                PlayerPrefs.SetInt("PlayWithBot", 1);
+                startTimeText.text = "No player found. Starting with bot...";
+                yield return new WaitForSeconds(2f);
+                PhotonNetwork.LoadLevel("MainScene");
+                yield break;
+            }
+            else
+            {
+                // ❌ No AI allowed: Retry matchmaking
+                startTimeText.text = "No player found. Retrying matchmaking...";
+                yield return new WaitForSeconds(2f);
+
+                // Optional: leave and rejoin matchmaking room
+                // PhotonNetwork.LeaveRoom();
+                // PhotonNetwork.JoinRandomRoom();
+            }
         }
     }
+
 
 
     private IEnumerator SmoothStopPlayerImage()

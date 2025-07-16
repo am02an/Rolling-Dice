@@ -1,43 +1,42 @@
-using UnityEngine;
+﻿using UnityEngine;
 using TMPro;
+using DG.Tweening;
 
 public class TileAbility : MonoBehaviour
 {
-    public int moveOffset = 0; // Example: +3, -2
+    public int moveOffset = 0;
 
     // UI Elements
     public TextMeshProUGUI offsetText;
-    public GameObject greenAbility; // For +ve offset (forward)
-    public GameObject redAbility;   // For -ve offset (backward)
-    public GameObject finish;   // For -ve offset (backward)
+    public GameObject greenAbility;
+    public GameObject redAbility;
+    public GameObject finish;
 
     private void Start()
     {
-        // Hide all visuals by default
-        if (offsetText != null)
-            offsetText.gameObject.SetActive(false);
-
+        offsetText?.gameObject.SetActive(false);
         greenAbility?.SetActive(false);
         redAbility?.SetActive(false);
-       
-        if (moveOffset == 0)
-        {
-            // No ability, nothing to show
-            return;
-        }
 
-        // Set text and activate proper ability visual
+        if (moveOffset == 0) return;
+
         if (offsetText != null)
         {
             offsetText.gameObject.SetActive(true);
             offsetText.text = moveOffset > 0 ? $"+{moveOffset}" : $"{moveOffset}";
+
+            // ✅ Continuous smooth Y-axis rotation
+            offsetText.transform.localRotation = Quaternion.identity;
+            offsetText.transform.DOLocalRotate(new Vector3(360, 0, 0), 2f, RotateMode.FastBeyond360)
+                               .SetEase(Ease.Linear)
+                               .SetLoops(-1, LoopType.Restart);
         }
 
         if (moveOffset > 0)
         {
             greenAbility?.SetActive(true);
         }
-        else if (moveOffset < 0)
+        else
         {
             redAbility?.SetActive(true);
         }
