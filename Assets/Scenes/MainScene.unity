@@ -1260,6 +1260,8 @@ MonoBehaviour:
   player1Slider: {fileID: 8476164094161902439}
   player2Slider: {fileID: 1649075643213854717}
   countdownText: {fileID: 617848451}
+  player1Score: {fileID: 8476164093473926462}
+  player2Score: {fileID: 1649075642733918798}
   victoryPanel: {fileID: 2410846426876273447}
   defeatPanel: {fileID: 8681763585360315468}
   player1SpawnPoint: {fileID: 1497939487}
@@ -1784,6 +1786,7 @@ GameObject:
   - component: {fileID: 1678285255}
   - component: {fileID: 1678285256}
   - component: {fileID: 1678285257}
+  - component: {fileID: 1678285258}
   m_Layer: 5
   m_Name: Dice_1
   m_TagString: Untagged
@@ -1953,10 +1956,27 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   observableSearch: 2
-  ObservedComponents: []
+  ObservedComponents:
+  - {fileID: 1678285258}
   sceneViewId: 1
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &1678285258
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1678285251}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 1
+  m_UseLocal: 1
 --- !u!1 &1709230030
 GameObject:
   m_ObjectHideFlags: 0
@@ -2069,6 +2089,7 @@ GameObject:
   - component: {fileID: 1823813828}
   - component: {fileID: 1823813829}
   - component: {fileID: 1823813830}
+  - component: {fileID: 1823813831}
   m_Layer: 5
   m_Name: Dice_2
   m_TagString: Untagged
@@ -2238,10 +2259,27 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   observableSearch: 2
-  ObservedComponents: []
+  ObservedComponents:
+  - {fileID: 1823813831}
   sceneViewId: 2
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!114 &1823813831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1823813824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_SynchronizePosition: 1
+  m_SynchronizeRotation: 1
+  m_SynchronizeScale: 1
+  m_UseLocal: 1
 --- !u!1 &1969044728
 GameObject:
   m_ObjectHideFlags: 0
@@ -2525,8 +2563,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 55
-  m_fontSizeBase: 55
+  m_fontSize: 50
+  m_fontSizeBase: 50
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -2609,8 +2647,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -341, y: -16}
-  m_SizeDelta: {x: 267.5709, y: 116.96}
+  m_AnchoredPosition: {x: -279.98413, y: -16}
+  m_SizeDelta: {x: 236.5392, y: 116.96}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1649075641709136698
 CanvasRenderer:
@@ -2796,7 +2834,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1649075642733918785
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2813,8 +2851,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 169.4, y: 7.12}
-  m_SizeDelta: {x: 141.7446, y: 50}
+  m_AnchoredPosition: {x: 116.75664, y: -16}
+  m_SizeDelta: {x: 153.4722, y: 116.96}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1649075642733918798
 MonoBehaviour:
@@ -2836,7 +2874,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 8701
+  m_text: 00
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5f58c05479cb14f588efcdfcbdab347c, type: 2}
   m_sharedMaterial: {fileID: 7423409246693961632, guid: 5f58c05479cb14f588efcdfcbdab347c, type: 2}
@@ -2863,14 +2901,14 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 34
-  m_fontSizeBase: 34
+  m_fontSize: 75
+  m_fontSizeBase: 75
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 1
+  m_fontStyle: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -4712,7 +4750,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &8476164093473926461
 RectTransform:
   m_ObjectHideFlags: 0
@@ -4729,8 +4767,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: -172.05188, y: 6.3201904}
-  m_SizeDelta: {x: 141.7446, y: 50}
+  m_AnchoredPosition: {x: -117.600006, y: -16}
+  m_SizeDelta: {x: 141.7446, y: 116.96}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8476164093473926462
 MonoBehaviour:
@@ -4752,7 +4790,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Distance
+  m_text: 20
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5f58c05479cb14f588efcdfcbdab347c, type: 2}
   m_sharedMaterial: {fileID: 7423409246693961632, guid: 5f58c05479cb14f588efcdfcbdab347c, type: 2}
@@ -4779,14 +4817,14 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 30
-  m_fontSizeBase: 30
+  m_fontSize: 75
+  m_fontSizeBase: 75
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
   m_fontSizeMax: 72
-  m_fontStyle: 0
-  m_HorizontalAlignment: 4
+  m_fontStyle: 1
+  m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
@@ -5261,7 +5299,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0.5}
   m_AnchorMax: {x: 0, y: 0.5}
-  m_AnchoredPosition: {x: 366, y: -16}
+  m_AnchoredPosition: {x: 297.3, y: -16}
   m_SizeDelta: {x: 267.5709, y: 116.96}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &8476164094493437670

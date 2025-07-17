@@ -206,10 +206,10 @@ public class DiceRoller : MonoBehaviour
             yield break;
         }
 
-        yield return StartCoroutine(HandleAbilityMovement(DiceID, currentTileIndex, tilePoints.Count));
+        yield return StartCoroutine(HandleAbilityMovement(DiceID,  tilePoints.Count));
     }
 
-    private IEnumerator HandleAbilityMovement(int diceID, int currentTileIndex, int totalTiles)
+    private IEnumerator HandleAbilityMovement(int diceID, int totalTiles)
     {
         while (true)
         {
@@ -230,26 +230,45 @@ public class DiceRoller : MonoBehaviour
                 abilitySequence.Append(playerObject.DOMove(tilePoints[i].position + new Vector3(0, 0.5f, 0), 0.3f).SetEase(Ease.Linear));
             }
 
-            currentTileIndex = newIndex;
-
             bool abilityMoveDone = false;
             abilitySequence.OnComplete(() => abilityMoveDone = true);
             yield return new WaitUntil(() => abilityMoveDone);
+
+            // ✅ Now we are updating the actual field, not a local copy
+            currentTileIndex = newIndex;
+
+            UIManager.Instance.UpdatePlayerProgress(diceID, currentTileIndex, tilePoints.Count);
+            RPCManager.Instance.UpdateSlider(diceID, currentTileIndex, totalTiles);
         }
 
-        UIManager.Instance.UpdatePlayerProgress(DiceID, currentTileIndex, tilePoints.Count);
+        // Optional final update (in case of no ability)
+        UIManager.Instance.UpdatePlayerProgress(diceID, currentTileIndex, tilePoints.Count);
         RPCManager.Instance.UpdateSlider(diceID, currentTileIndex, totalTiles);
     }
 
     #endregion
 
     #region Dice Visual Sync (Remote)
-
-    public void SetDiceSprite(int index) => diceImage.sprite = diceFaces[index];
-    public void PlayPunchAnimationDuringRoll() => diceImage.transform.DOPunchScale(Vector3.one * 0.2f, 0.1f, 10, 1f);
-    public void PlayFinalPunchEffect() => diceImage.transform.DOPunchScale(Vector3.one * 0.3f, 0.3f, 8, 0.7f);
-    public void SetFinalSprite(int value) => diceImage.sprite = diceFaces[value - 1];
-
+    public void SetDiceSprite(int index)
+    {
+        diceImage.sprite = diceFaces[index];
+    }
+    public void PlayPunchAnimationDuringRoll()
+    {
+        diceImage.transform.DOKill();
+        diceImage.transform.localScale = Vector3.one;
+        diceImage.transform.DOPunchScale(Vector3.one * 0.2f, 0.1f, 10, 1f);
+    }
+    public void PlayFinalPunchEffect()
+    {
+        diceImage.transform.DOKill();
+        diceImage.transform.localScale = Vector3.one;
+        diceImage.transform.DOPunchScale(Vector3.one * 0.3f, 0.3f, 8, 0.7f);
+    }
+    public void SetFinalSprite(int value)
+    {
+        diceImage.sprite = diceFaces[value - 1];
+    }
     #endregion
 
     #region Arrow Highlighting
