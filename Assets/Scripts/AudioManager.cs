@@ -2,27 +2,37 @@ using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
+/// <summary>
+/// Manages background music and sound effects throughout the game,
+/// using an audio source pool for efficient SFX playback.
+/// </summary>
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance;
 
+    #region Music Settings
     [Header("Music Settings")]
-    public AudioSource bgmSource;              // Assign in Inspector
+    public AudioSource bgmSource;
     public AudioClip mainBackgroundMusic;
     public AudioClip ClickSound;
     public AudioClip countDown;
+    #endregion
 
+    #region SFX Settings
     [Header("SFX Settings")]
-    public AudioSource sfxSourcePrefab;        // Prefab with AudioSource (no clip)
+    public AudioSource sfxSourcePrefab;
     public int sfxPoolSize = 10;
     public float sfxFadeInDuration = 0.1f;
-
     private List<AudioSource> sfxPool = new List<AudioSource>();
+    #endregion
 
+    #region Volume Settings
     [Header("Volumes")]
     [Range(0f, 1f)] public float bgmVolume = 0.5f;
     [Range(0f, 1f)] public float sfxVolume = 1f;
+    #endregion
 
+    #region Unity Callbacks
     private void Awake()
     {
         if (Instance == null)
@@ -41,9 +51,9 @@ public class AudioManager : MonoBehaviour
     {
         PlayBackgroundMusic();
     }
+    #endregion
 
-    #region BGM
-
+    #region BGM Methods
     public void PlayBackgroundMusic(AudioClip clip = null)
     {
         if (bgmSource == null) return;
@@ -65,11 +75,9 @@ public class AudioManager : MonoBehaviour
         bgmVolume = volume;
         bgmSource.volume = volume;
     }
-
     #endregion
 
-    #region SFX
-
+    #region SFX Methods
     private void InitSFXPool()
     {
         for (int i = 0; i < sfxPoolSize; i++)
@@ -108,8 +116,6 @@ public class AudioManager : MonoBehaviour
             if (!source.isPlaying)
                 return source;
         }
-
-        // If all are busy, return the first one (can overlap)
         return sfxPool[0];
     }
 
@@ -128,6 +134,5 @@ public class AudioManager : MonoBehaviour
         }
         source.volume = sfxVolume;
     }
-
     #endregion
 }

@@ -1,26 +1,33 @@
 using UnityEngine;
 
+/// <summary>
+/// Controls the camera behavior to follow one or two player targets smoothly.
+/// Can be toggled on or off during gameplay (e.g., during turns).
+/// </summary>
 public class CameraController : MonoBehaviour
 {
+    #region Target Settings
     [Header("Target Settings")]
-    public Transform player1;              // Assign Player 1's transform
-    public Transform player2;              // Assign Player 2's transform
+    public Transform player1; // Assign Player 1's transform
+    public Transform player2; // Assign Player 2's transform
+    #endregion
 
+    #region Camera Settings
     [Header("Offset Settings")]
-    public Vector3 offset = new Vector3(2.53f, 3f, -5f);  // Offset from the target
+    public Vector3 offset = new Vector3(2.53f, 3f, -5f);
 
     [Header("Follow Settings")]
     public float followSpeed = 2f;
-
     private bool shouldFollow = false;
+    #endregion
 
-    void LateUpdate()
+    #region Unity Callbacks
+    private void LateUpdate()
     {
         if (!shouldFollow) return;
 
         Vector3 targetPosition;
 
-        // Determine who to follow
         if (player1 != null && player2 != null)
         {
             Vector3 midpoint = (player1.position + player2.position) / 2f;
@@ -36,14 +43,16 @@ public class CameraController : MonoBehaviour
         }
         else
         {
-            return; // No player to follow
+            return;
         }
 
         transform.position = Vector3.Lerp(transform.position, targetPosition, followSpeed * Time.deltaTime);
     }
+    #endregion
 
+    #region Public Methods
     /// <summary>
-    /// Call this when it's time to follow the player(s).
+    /// Enables camera following behavior.
     /// </summary>
     public void MoveCameraAfterTurn()
     {
@@ -51,10 +60,11 @@ public class CameraController : MonoBehaviour
     }
 
     /// <summary>
-    /// Stop camera from following.
+    /// Disables camera following behavior.
     /// </summary>
     public void StopCameraFollow()
     {
         shouldFollow = false;
     }
+    #endregion
 }

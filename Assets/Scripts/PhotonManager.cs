@@ -11,31 +11,40 @@ using DG.Tweening;
 public class PhotonManager : MonoBehaviourPunCallbacks
 {
     public static PhotonManager Instance;
-    public float matchmakingTimeout = 5f; // seconds
-    [SerializeField] private TextMeshProUGUI startTimeText;
-    [SerializeField] private GameObject StartButton;
 
-
-    [Header("Selection")]
-    public Image player2Image;
-    public List<Sprite> opponentSprites; // Assign 5–7 sprites in Inspector
-    public float spriteChangeInterval = 0.3f;
+    #region Matchmaking Settings
+    public float matchmakingTimeout = 5f;
+    public bool allowAIMatch = true;
     public bool isAIMatch;
-    private Coroutine characterCycleCoroutine;
+    #endregion
 
-    public CanvasGroup myPanelCanvasGroup;
+    #region UI References
+    [SerializeField] private GameObject StartButton;
+    public List<Sprite> opponentSprites;
+    public float spriteChangeInterval = 0.3f;
+    private Coroutine characterCycleCoroutine;
+    #endregion
+
+    #region Opponent Animation
     public float moveSpeed = 20f;
     public float moveRange = 30f;
-
     private bool isSearching = false;
     private Vector2 startPos;
+    #endregion
+
+    #region Photon Role Flags
     public bool IsMasterClient;
     public bool IsOtherPlayer;
+    #endregion
 
-
+    #region Unity Callbacks
     private void Awake()
     {
-        if (Instance == null) { Instance = this; DontDestroyOnLoad(gameObject); }
+        if (Instance == null)
+        {
+            Instance = this;
+            DontDestroyOnLoad(gameObject);
+        }
         else Destroy(gameObject);
     }
 
@@ -43,9 +52,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     {
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.ConnectUsingSettings();
-       
     }
+    #endregion
 
+    #region Match Start Logic
     public void StartMatch()
     {
         StartButton.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.OutBack);
@@ -57,16 +67,13 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         }
         else if (!PhotonNetwork.IsConnected)
         {
-            Debug.LogWarning("Photon not connected. Connecting...");
-            PhotonNetwork.ConnectUsingSettings(); // Ensure reconnecting if disconnected
+            PhotonNetwork.ConnectUsingSettings();
         }
         else
         {
-            Debug.LogWarning("Not on Master Server yet. Waiting...");
             StartCoroutine(WaitForPhotonConnectionThenJoin());
         }
     }
-
 
     private IEnumerator WaitForPhotonConnectionThenJoin()
     {
@@ -77,19 +84,14 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
         PhotonNetwork.JoinRandomRoom();
     }
+    #endregion
 
-
-
+    #region Photon Callbacks
     public override void OnConnectedToMaster()
     {
-        Debug.Log("Connected to Photon");
-
-        // If StartButton is not assigned in Inspector, try to find it in scene
         if (StartButton == null)
         {
-            // In Awake or Start
-            StartButton = GameObject.FindGameObjectWithTag("StartButton"); // Make sure it's tagged
-
+            StartButton = GameObject.FindGameObjectWithTag("StartButton");
 
             if (StartButton != null)
             {
@@ -98,41 +100,14 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             else
             {
                 Debug.LogWarning("StartButton (Button_Play) not found in the scene.");
-                return; // Exit if button is not found
+                return;
             }
         }
 
         StartButton.transform.localScale = Vector3.zero;
-        //StartButton.SetActive(true);
-
-        // Animate in
         StartButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
     }
-    public override void OnPlayerLeftRoom(Player otherPlayer)
-    {
-        Debug.Log($"Player {otherPlayer.NickName} left the room.");
 
-        if (PhotonNetwork.IsMasterClient)
-        {
-            DeclareVictoryToRemainingPlayer();
-        }
-    }
-
-    /// <summary>
-    /// Declares victory for the player still in the room.
-    /// </summary>
-    private void DeclareVictoryToRemainingPlayer()
-    {
-        if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
-        {
-            // Only one player left – show Victory
-            UIManager.Instance.ShowVictory();  // Make sure your UIManager has this method
-        }
-        else
-        {
-            Debug.Log("More than one player still in room. No automatic victory.");
-        }
-    }
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
         PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = 2 });
@@ -140,40 +115,37 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
-        Debug.Log("Joined Room: waiting for players...");
-
-        // Determine player role
         IsMasterClient = PhotonNetwork.IsMasterClient;
         IsOtherPlayer = !PhotonNetwork.IsMasterClient;
 
-        Debug.Log("You are " + (IsMasterClient ? "Master Client" : "Other Player"));
-
-        StartCoroutine(UIUtils.FadeCanvasGroup(myPanelCanvasGroup, 1f, 0.5f, true));
+        StartCoroutine(UIUtils.FadeCanvasGroup(LobbyUI.Instance.myPanelCanvasGroup, 1f, 0.5f, true));
         StartCoroutine(WaitForOpponent());
     }
 
-
-    private IEnumerator CycleOpponentImages()
+    public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        int index = 0;
-        while (isSearching)
+        if (PhotonNetwork.IsMasterClient)
         {
-            player2Image.sprite = opponentSprites[index];
-            index = (index + 1) % opponentSprites.Count;
-            yield return new WaitForSeconds(spriteChangeInterval);
+            DeclareVictoryToRemainingPlayer();
         }
     }
 
-   public bool allowAIMatch = true; // Set this from Inspector or code
+    private void DeclareVictoryToRemainingPlayer()
+    {
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
+        {
+            UIManager.Instance.ShowVictory();
+        }
+    }
+    #endregion
 
+    #region Opponent Search
     private IEnumerator WaitForOpponent()
     {
-        while (true) // Loop to retry until opponent is found or AI fallback
+        while (true)
         {
             isSearching = true;
-            startPos = player2Image.rectTransform.anchoredPosition;
-
-            // Start cycling character images
+            startPos = LobbyUI.Instance.player2Image.rectTransform.anchoredPosition;
             characterCycleCoroutine = StartCoroutine(CycleOpponentImages());
 
             float timer = 0f;
@@ -183,11 +155,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             {
                 timer += Time.deltaTime;
                 timeLeft = Mathf.Max(0f, matchmakingTimeout - timer);
-                startTimeText.text = $"Searching for player... <color=#00FF00>{Mathf.FloorToInt(timeLeft)}s</color>";
+                LobbyUI.Instance.startTimeText.text = $"Searching for player... <color=#00FF00>{Mathf.FloorToInt(timeLeft)}s</color>";
 
-                // Animate opponent image
                 float offset = Mathf.PingPong(Time.time * moveSpeed, moveRange);
-                player2Image.rectTransform.anchoredPosition = startPos + new Vector2(offset, 0);
+                LobbyUI.Instance.player2Image.rectTransform.anchoredPosition = startPos + new Vector2(offset, 0);
 
                 yield return null;
             }
@@ -199,57 +170,59 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
             yield return StartCoroutine(SmoothStopPlayerImage());
 
-            int finalIndex = UnityEngine.Random.Range(0, opponentSprites.Count);
-            player2Image.sprite = opponentSprites[finalIndex];
+            int finalIndex = Random.Range(0, opponentSprites.Count);
+            LobbyUI.Instance.player2Image.sprite = opponentSprites[finalIndex];
 
             if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
             {
                 isAIMatch = false;
-                startTimeText.text = "Player found!";
+                LobbyUI.Instance.startTimeText.text = "Player found!";
                 yield return new WaitForSeconds(2f);
                 PhotonNetwork.LoadLevel("MainScene");
                 yield break;
             }
             else if (allowAIMatch)
             {
-                // ✅ AI Fallback
                 isAIMatch = true;
                 PlayerPrefs.SetInt("PlayWithBot", 1);
-                startTimeText.text = "No player found. Starting with bot...";
+                LobbyUI.Instance.startTimeText.text = "No player found. Starting with bot...";
                 yield return new WaitForSeconds(2f);
                 PhotonNetwork.LoadLevel("MainScene");
                 yield break;
             }
             else
             {
-                // ❌ No AI allowed: Retry matchmaking
-                startTimeText.text = "No player found. Retrying matchmaking...";
+                LobbyUI.Instance.startTimeText.text = "No player found. Retrying matchmaking...";
                 yield return new WaitForSeconds(2f);
-
-                // Optional: leave and rejoin matchmaking room
-                // PhotonNetwork.LeaveRoom();
-                // PhotonNetwork.JoinRandomRoom();
             }
         }
     }
 
-
+    private IEnumerator CycleOpponentImages()
+    {
+        int index = 0;
+        while (isSearching)
+        {
+            LobbyUI.Instance.player2Image.sprite = opponentSprites[index];
+            index = (index + 1) % opponentSprites.Count;
+            yield return new WaitForSeconds(spriteChangeInterval);
+        }
+    }
 
     private IEnumerator SmoothStopPlayerImage()
     {
-        Vector2 currentPos = player2Image.rectTransform.anchoredPosition;
+        Vector2 currentPos = LobbyUI.Instance.player2Image.rectTransform.anchoredPosition;
         float duration = 0.3f;
         float elapsed = 0f;
 
         while (elapsed < duration)
         {
-            player2Image.rectTransform.anchoredPosition = Vector2.Lerp(currentPos, startPos, elapsed / duration);
+            LobbyUI.Instance.player2Image.rectTransform.anchoredPosition = Vector2.Lerp(currentPos, startPos, elapsed / duration);
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        player2Image.rectTransform.anchoredPosition = startPos;
+        LobbyUI.Instance.player2Image.rectTransform.anchoredPosition = startPos;
     }
-
-
+    #endregion
 }

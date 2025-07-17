@@ -14,16 +14,21 @@ public class RPCManager : MonoBehaviourPun
             Destroy(gameObject);
     }
 
-    // Send Track Data to Other Player
+    #region Track Sync
+
+    /// <summary>
+    /// Sends serialized track data of both players to the opponent.
+    /// </summary>
     public void SendTrackData(List<TileData> p1, List<TileData> p2)
     {
         string jsonP1 = JsonUtility.ToJson(new TrackWrapper(p1));
         string jsonP2 = JsonUtility.ToJson(new TrackWrapper(p2));
         photonView.RPC("ReceiveTrackData", RpcTarget.Others, jsonP1, jsonP2);
     }
-  
 
-
+    /// <summary>
+    /// Receives track data and calls GameManager to handle it.
+    /// </summary>
     [PunRPC]
     void ReceiveTrackData(string jsonP1, string jsonP2)
     {
@@ -32,11 +37,43 @@ public class RPCManager : MonoBehaviourPun
         GameManager.Instance.OnTrackDataReceived(p1, p2);
     }
 
-    // Turn Management
+    #endregion
+
+    #region Turn Management
+
+    /// <summary>
+    /// Sends current turn actor number to all players.
+    /// </summary>
     public void SetTurnRPC(int actorNumber)
     {
         photonView.RPC("RPC_SetTurn", RpcTarget.AllBuffered, actorNumber);
     }
+
+    /// <summary>
+    /// Receives turn change and notifies GameManager.
+    /// </summary>
+    [PunRPC]
+    void RPC_SetTurn(int actorNumber)
+    {
+        Debug.Log($"Turn Changed To Actor: {actorNumber}");
+        GameManager.Instance.OnTurnChanged(actorNumber);
+    }
+
+    #endregion
+
+    #region Dice Rolling
+
+    /// <summary>
+    /// Sends dice roll value to all clients to sync dice roll.
+    /// </summary>
+    public void SendDiceRoll(int diceID, int value)
+    {
+        photonView.RPC(nameof(RPC_StartRoll), RpcTarget.All, diceID, value);
+    }
+
+    /// <summary>
+    /// Starts dice roll animation for the specified dice.
+    /// </summary>
     [PunRPC]
     public void RPC_StartRoll(int diceID, int value)
     {
@@ -45,20 +82,9 @@ public class RPCManager : MonoBehaviourPun
             targetDice.StartCoroutine(targetDice.RollRoutine(value));
     }
 
-    public void SendDiceRoll(int diceID, int value)
-    {
-        photonView.RPC(nameof(RPC_StartRoll), RpcTarget.All, diceID, value);
-    }
-
-    private DiceRoller FindTargetDice(int id)
-    {
-        foreach (var dice in FindObjectsOfType<DiceRoller>())
-        {
-            if (dice.DiceID == id)
-                return dice;
-        }
-        return null;
-    }
+    /// <summary>
+    /// Syncs final dice face after roll is complete.
+    /// </summary>
     [PunRPC]
     public void RPC_ShowDiceResult(int diceID, int value)
     {
@@ -68,57 +94,115 @@ public class RPCManager : MonoBehaviourPun
             targetDice.SetFinalSprite(value);
         }
     }
-    public void SendDiceSpriteSync(int diceID, int value)
+
+    /// <summary>
+    /// Syncs dice face during roll to show rolling effect.
+    /// </summary>
+    public void SendDiceSpriteSync(int diceID, int faceValue, bool isRolling = false)
     {
-        photonView.RPC(nameof(RPC_ShowDiceResult), RpcTarget.Others, diceID, value);
+        photonView.RPC("RPC_SyncDiceSprite", RpcTarget.Others, diceID, faceValue, isRolling);
     }
 
     [PunRPC]
-    void RPC_SetTurn(int actorNumber)
+    public void RPC_SyncDiceSprite(int diceID, int faceValue, bool isRolling)
     {
-        Debug.Log($"Turn Changed To Actor: {actorNumber}");
-        GameManager.Instance.OnTurnChanged(actorNumber);
+        DiceRoller dice = UIManager.Instance.GetDiceByID(diceID);
+        if (dice == null) return;
+
+        dice.SetDiceSprite(faceValue - 1);
+
+        if (isRolling)
+            dice.PlayPunchAnimationDuringRoll();
+        else
+            dice.PlayFinalPunchEffect();
     }
 
-    // Optional: sync dice roll sprite (new addition)
+    /// <summary>
+    /// Finds a dice by its ID from the scene.
+    /// </summary>
+    private DiceRoller FindTargetDice(int id)
+    {
+        foreach (var dice in FindObjectsOfType<DiceRoller>())
+        {
+            if (dice.DiceID == id)
+                return dice;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Syncs dice face index between clients.
+    /// </summary>
     public void SyncDiceFace(int diceId, int faceIndex)
     {
         photonView.RPC("RPC_SyncDiceFace", RpcTarget.Others, diceId, faceIndex);
     }
 
-    [PunRPC]
-    void RPC_SyncDiceFace(int diceId, int faceIndex)
+    #endregion
+
+    #region Countdown
+
+    /// <summary>
+    /// Sends start countdown request to all players.
+    /// </summary>
+    public void SendStartCountdown()
     {
-        UIManager.Instance.UpdateDiceFace(diceId, faceIndex);
+        photonView.RPC(nameof(RPC_StartCountdown), RpcTarget.All);
     }
-    // Inside RPCManager.cs
+
+    /// <summary>
+    /// Starts countdown animation on all clients.
+    /// </summary>
     [PunRPC]
     public void RPC_StartCountdown()
     {
         GameManager.Instance.StartCoroutine(UIManager.Instance.StartCountdown());
     }
 
-    public void SendStartCountdown()
+    #endregion
+
+    #region Game Result
+
+    /// <summary>
+    /// Show game result based on winning dice ID.
+    /// </summary>
+    public void ShowGameResult(int winnerDiceID)
     {
-        photonView.RPC(nameof(RPC_StartCountdown), RpcTarget.All);
+        photonView.RPC(nameof(RPC_ShowGameResult), RpcTarget.All, winnerDiceID);
     }
+
     [PunRPC]
     public void RPC_ShowGameResult(int winnerDiceID)
     {
-        if (winnerDiceID == 1)
-        {
-            if (PhotonNetwork.LocalPlayer.IsMasterClient)
-                UIManager.Instance.ShowVictory();
-            else
-                UIManager.Instance.ShowDefeat();
-        }
-        else if (winnerDiceID == 2)
-        {
-            if (PhotonNetwork.LocalPlayer.IsMasterClient)
-                UIManager.Instance.ShowDefeat();
-            else
-                UIManager.Instance.ShowVictory();
-        }
+        bool isWinner = (winnerDiceID == 1 && PhotonNetwork.LocalPlayer.IsMasterClient)
+                     || (winnerDiceID == 2 && !PhotonNetwork.LocalPlayer.IsMasterClient);
+
+        if (isWinner)
+            UIManager.Instance.ShowVictory();
+        else
+            UIManager.Instance.ShowDefeat();
     }
 
+    #endregion
+
+    #region Progress Sync
+
+    /// <summary>
+    /// Sends player progress update to opponent.
+    /// </summary>
+    public void UpdateSlider(int diceID, int currentTileIndex, int totalTiles)
+    {
+        photonView.RPC("RPC_UpdatePlayerProgress", RpcTarget.Others, diceID, currentTileIndex, totalTiles);
+    }
+
+    /// <summary>
+    /// Updates UI slider for opponent's progress.
+    /// </summary>
+    [PunRPC]
+    public void RPC_UpdatePlayerProgress(int diceID, int currentTileIndex, int totalTiles)
+    {
+        UIManager.Instance.UpdatePlayerProgress(diceID, currentTileIndex, totalTiles);
+    }
+
+    #endregion
 }
