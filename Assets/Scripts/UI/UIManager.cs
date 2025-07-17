@@ -13,6 +13,8 @@ public class UIManager : MonoBehaviour
     public Slider player1Slider;
     public Slider player2Slider;
     public TMP_Text countdownText;
+    public TextMeshProUGUI player1Score;
+    public TextMeshProUGUI player2Score;
     public GameObject victoryPanel;
     public GameObject defeatPanel;
     #endregion
@@ -89,6 +91,8 @@ public class UIManager : MonoBehaviour
         player1Slider.value = 0;
         player2Slider.value = 0;
         countdownText.text = "";
+        player1Score.text ="0";
+        player2Score.text ="0";
     }
     #endregion
 
@@ -123,13 +127,16 @@ public class UIManager : MonoBehaviour
         {
             player1Slider.DOKill();
             player1Slider.DOValue(progress, 0.4f).SetEase(Ease.OutQuad);
+            player1Score.text =  currentTileIndex.ToString();
         }
         else if (diceID == 2)
         {
             player2Slider.DOKill();
             player2Slider.DOValue(progress, 0.4f).SetEase(Ease.OutQuad);
+            player2Score.text =  currentTileIndex.ToString();
         }
     }
+
 
     public void UpdateDiceFace(int diceID, int faceIndex)
     {
