@@ -1054,6 +1054,37 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!1 &1049201892
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1049201893}
+  m_Layer: 0
+  m_Name: '---PLAYERS--- '
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1049201893
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1049201892}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1517.1501, y: 1366, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1050405011
 GameObject:
   m_ObjectHideFlags: 0
@@ -1229,12 +1260,12 @@ MonoBehaviour:
   player1Slider: {fileID: 8476164094161902439}
   player2Slider: {fileID: 1649075643213854717}
   countdownText: {fileID: 617848451}
+  victoryPanel: {fileID: 2410846426876273447}
+  defeatPanel: {fileID: 8681763585360315468}
   player1SpawnPoint: {fileID: 1497939487}
   player2SpawnPoint: {fileID: 1568620978}
   player1Prefab: {fileID: 9190282262293329311, guid: 5535827f3c12c5c4187ab458c7ad0ea5, type: 3}
   player2Prefab: {fileID: 9190282262293329311, guid: 5a9d96ddb8021a246a820545025b30f4, type: 3}
-  victoryPanel: {fileID: 2410846426876273447}
-  defeatPanel: {fileID: 8681763585360315468}
   diceRoller:
   - {fileID: 1678285255}
   - {fileID: 1823813828}
@@ -1389,6 +1420,37 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1380023587}
   m_CullTransparentMesh: 1
+--- !u!1 &1481212435
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1481212436}
+  m_Layer: 0
+  m_Name: ---UI---
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1481212436
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1481212435}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1517.1501, y: 1366, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1495653468
 GameObject:
   m_ObjectHideFlags: 0
@@ -1808,7 +1870,6 @@ MonoBehaviour:
   - {fileID: 21300000, guid: af4b5234e04ff614fbbb79f002ef1e03, type: 3}
   diceImage: {fileID: 1678285253}
   rollButton: {fileID: 1678285256}
-  resultText: {fileID: 0}
   highlightObject: {fileID: 1495653468}
   arrowObject: {fileID: 1495653469}
   rollDuration: 0.8
@@ -1896,6 +1957,37 @@ MonoBehaviour:
   sceneViewId: 1
   InstantiationId: 0
   isRuntimeInstantiated: 0
+--- !u!1 &1709230030
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1709230031}
+  m_Layer: 0
+  m_Name: ---ENVIRONMENT---
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1709230031
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1709230030}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1517.1501, y: 1366, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1777852001
 GameObject:
   m_ObjectHideFlags: 0
@@ -2063,7 +2155,6 @@ MonoBehaviour:
   - {fileID: 21300000, guid: af4b5234e04ff614fbbb79f002ef1e03, type: 3}
   diceImage: {fileID: 1823813826}
   rollButton: {fileID: 1823813829}
-  resultText: {fileID: 0}
   highlightObject: {fileID: 670224964}
   arrowObject: {fileID: 670224965}
   rollDuration: 0.8
@@ -6673,11 +6764,14 @@ CanvasRenderer:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 1709230031}
   - {fileID: 1050405014}
   - {fileID: 421318176}
   - {fileID: 1538553262}
+  - {fileID: 1481212436}
   - {fileID: 390346602}
   - {fileID: 1997862012}
+  - {fileID: 1049201893}
   - {fileID: 1497939487}
   - {fileID: 1568620978}
   - {fileID: 1142790818}
