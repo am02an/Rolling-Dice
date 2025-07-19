@@ -16,6 +16,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public float matchmakingTimeout = 5f;
     public bool allowAIMatch = true;
     public bool isAIMatch;
+    public string stringGameName;
     #endregion
 
     #region UI References
@@ -50,12 +51,22 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        StartButton.transform.localScale = Vector3.zero;
+        StartCoroutine(ShowStartButtonWhenReady());
         PhotonNetwork.AutomaticallySyncScene = true;
         PhotonNetwork.ConnectUsingSettings();
     }
     #endregion
 
     #region Match Start Logic
+    private IEnumerator ShowStartButtonWhenReady()
+    {
+        // Wait until the input field is not empty
+        yield return new WaitUntil(() => !string.IsNullOrWhiteSpace(stringGameName));
+
+        // Animate the button
+        StartButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+    }
     public void StartMatch()
     {
         StartButton.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.OutBack);
@@ -178,7 +189,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                 isAIMatch = false;
                 LobbyUI.Instance.startTimeText.text = "Player found!";
                 yield return new WaitForSeconds(2f);
-                PhotonNetwork.LoadLevel("MainScene");
+                PhotonNetwork.LoadLevel(stringGameName);
                 yield break;
             }
             else if (allowAIMatch)
@@ -187,7 +198,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                 PlayerPrefs.SetInt("PlayWithBot", 1);
                 LobbyUI.Instance.startTimeText.text = "No player found. Starting with bot...";
                 yield return new WaitForSeconds(2f);
-                PhotonNetwork.LoadLevel("MainScene");
+                PhotonNetwork.LoadLevel(stringGameName);
                 yield break;
             }
             else

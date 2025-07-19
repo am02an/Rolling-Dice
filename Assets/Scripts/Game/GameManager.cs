@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
-
+using TMPro;
 [System.Serializable]
 public class TileData
 {
@@ -21,6 +21,8 @@ public class TrackWrapper
 public class GameManager : MonoBehaviourPunCallbacks
 {
     public static GameManager Instance;
+    public TextMeshProUGUI fpsText; // Assign a UI Text element in the inspector
+
 
     [Header("Track & Gameplay Setup")]
     public GameObject planePrefab;
@@ -50,6 +52,19 @@ public class GameManager : MonoBehaviourPunCallbacks
             SetupMultiplayer();
         else
             SetupAIMatch();
+    }
+    private float deltaTime;
+
+    void Update()
+    {
+        deltaTime += (Time.unscaledDeltaTime - deltaTime) * 0.1f;
+        float fps = 1.0f / deltaTime;
+        fpsText.text = "FPS: " + Mathf.Ceil(fps).ToString();
+    }
+
+    public float GetCurrentFPS()
+    {
+        return 1.0f / deltaTime;
     }
 
     // ---------------- Multiplayer Setup ----------------
