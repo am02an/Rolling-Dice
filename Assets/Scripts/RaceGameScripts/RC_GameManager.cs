@@ -2,17 +2,20 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
+
 public class RC_GameManager : MonoBehaviourPunCallbacks
 {
     public static RC_GameManager Instance;
 
-    public TextMeshProUGUI fpsText; // Assign a UI Text element in the inspector
+    public TextMeshProUGUI fpsText;
+
     [Header("Spawn Settings")]
     public Transform spawnPointMasterClient;
     public Transform spawnPointOtherPlayer;
 
     [Header("Car Prefab")]
     public GameObject carPrefab;
+    public GameObject opponentPrefab;
 
     private void Awake()
     {
@@ -24,11 +27,18 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
-        if (PhotonNetwork.IsConnectedAndReady)
+        if (PhotonManager.Instance.isAIMatch)
+        {
+            SpawnForAIMatch();
+        }
+        else if (PhotonNetwork.IsConnectedAndReady)
         {
             SpawnCarForPlayer();
         }
+
+        GameController.Instance.Initcars(); // Common init
     }
+
     private float deltaTime;
 
     void Update()
@@ -42,14 +52,25 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
     {
         return 1.0f / deltaTime;
     }
+
     void SpawnCarForPlayer()
     {
         Transform spawnPoint = PhotonNetwork.IsMasterClient ? spawnPointMasterClient : spawnPointOtherPlayer;
 
-        GameObject car = PhotonNetwork.Instantiate(carPrefab.name, spawnPoint.position, spawnPoint.rotation);
-        FindObjectOfType<SCC_Camera>().playerCar = car.transform;
-        FindObjectOfType<SCC_Dashboard>().car = car.GetComponent<SCC_Drivetrain>();
-        // Optionally assign ownership, add player-specific color, camera, etc.
-        Debug.Log($"Car spawned for {(PhotonNetwork.IsMasterClient ? "MasterClient" : "Other Player")} at {spawnPoint.name}");
+        string prefabToSpawn = PhotonNetwork.IsMasterClient ? carPrefab.name : opponentPrefab.name;
+        GameObject car = PhotonNetwork.Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
+
+        Debug.Log($"[Multiplayer] Car spawned for {(PhotonNetwork.IsMasterClient ? "MasterClient" : "Other Player")} at {spawnPoint.name}");
+    }
+
+    void SpawnForAIMatch()
+    {
+        // Local player car
+        GameObject playerCar = Instantiate(carPrefab, spawnPointMasterClient.position, spawnPointMasterClient.rotation);
+
+        // AI opponent car
+        GameObject aiCar = Instantiate(opponentPrefab, spawnPointOtherPlayer.position, spawnPointOtherPlayer.rotation);
+
+        Debug.Log("[AI Match] Spawned player car and AI opponent.");
     }
 }

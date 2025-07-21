@@ -60,11 +60,11 @@ public class UIManager : MonoBehaviour
         if (PhotonManager.Instance.isAIMatch)
         {
             player1Obj = PhotonNetwork.Instantiate("Player1", player1SpawnPoint.position + new Vector3(0, 0.45f, 0), Quaternion.identity);
-            Camera.main.GetComponent<CameraController>().player1 = player1Obj.transform;
+            Camera.main.GetComponent<Dice_CameraController>().player1 = player1Obj.transform;
             diceRoller[0].playerObject = player1Obj.transform;
 
             player2Obj = Instantiate(player2Prefab, player2SpawnPoint.position + new Vector3(0, 0.45f, 0), Quaternion.identity);
-            Camera.main.GetComponent<CameraController>().player2 = player2Obj.transform;
+            Camera.main.GetComponent<Dice_CameraController>().player2 = player2Obj.transform;
             diceRoller[1].playerObject = player2Obj.transform;
         }
         else
@@ -72,13 +72,13 @@ public class UIManager : MonoBehaviour
             if (PhotonNetwork.LocalPlayer.ActorNumber == 1)
             {
                 player1Obj = PhotonNetwork.Instantiate("Player1", player1SpawnPoint.position + new Vector3(0, 0.45f, 0), Quaternion.identity);
-                Camera.main.GetComponent<CameraController>().player1 = player1Obj.transform;
+                Camera.main.GetComponent<Dice_CameraController>().player1 = player1Obj.transform;
                 diceRoller[0].playerObject = player1Obj.transform;
             }
             else if (PhotonNetwork.LocalPlayer.ActorNumber == 2)
             {
                 player2Obj = PhotonNetwork.Instantiate("Player2", player2SpawnPoint.position + new Vector3(0, 0.45f, 0), Quaternion.identity);
-                Camera.main.GetComponent<CameraController>().player2 = player2Obj.transform;
+                Camera.main.GetComponent<Dice_CameraController>().player2 = player2Obj.transform;
                 diceRoller[1].playerObject = player2Obj.transform;
             }
         }
