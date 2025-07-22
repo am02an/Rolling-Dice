@@ -1,13 +1,13 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Photon.Pun;
 /// <summary>
 /// Main car controller
 /// </summary>
 
 [RequireComponent (typeof (Rigidbody))]
-public class CarController :MonoBehaviour
+public class CarController : MonoBehaviourPun
 {
 
 	[SerializeField] Wheel FrontLeftWheel;
@@ -18,6 +18,25 @@ public class CarController :MonoBehaviour
 	[SerializeField] List<ParticleSystem> BackFireParticles = new List<ParticleSystem>();
 
 	[SerializeField] CarConfig CarConfig;
+	[SerializeField] private Material opponentCar;
+	public Renderer carRenderer;
+
+	[Header("Drift Point Settings")]
+	[SerializeField] private float minDriftAngle = 10f;   // Minimum angle to count as drift
+	[SerializeField] private float maxDriftAngle = 45f;   // Maximum angle considered for scoring
+	[SerializeField] private float driftPointMultiplier = 1.0f; // Points per second multiplier
+	[SerializeField] private float driftGraceTime = 2f; // Time allowed to recover drift
+
+	private bool isDrifting = false;
+	private float driftScore = 0f;
+	private float currentDriftTime = 0f;
+	private float totalDriftPoints = 0f;
+	private float driftGraceTimer = 0f;
+	private float lastDriftEndTime = -10f;
+	private int driftChainCount = 0;
+	public float driftChainThreshold = 2f; // Time allowed between drifts to keep chaining
+
+
 
 	#region Properties of car parameters
 
@@ -140,13 +159,17 @@ public class CarController :MonoBehaviour
 		}
 	}
 
-	/// <summary>
-	/// Update controls of car, from user control (TODO AI control).
-	/// </summary>
-	/// <param name="horizontal">Turn direction</param>
-	/// <param name="vertical">Acceleration</param>
-	/// <param name="brake">Brake</param>
-	public void UpdateControls (float horizontal, float vertical, bool handBrake)
+    private void Start()
+    {
+		SetCarMaterialIfNotMaster();
+	}
+    /// <summary>
+    /// Update controls of car, from user control (TODO AI control).
+    /// </summary>
+    /// <param name="horizontal">Turn direction</param>
+    /// <param name="vertical">Acceleration</param>
+    /// <param name="brake">Brake</param>
+    public void UpdateControls (float horizontal, float vertical, bool handBrake)
 	{
 		float targetSteerAngle = horizontal * MaxSteerAngle;
 
@@ -160,7 +183,22 @@ public class CarController :MonoBehaviour
 		CurrentAcceleration = vertical;
         InHandBrake = handBrake;
 	}
+	public void SetCarMaterialIfNotMaster()
+	{
+		// If in AI Match, skip check
+		if (PhotonManager.Instance != null && PhotonManager.Instance.isAIMatch)
+			return;
 
+		// Only change material if this car is not owned by MasterClient
+		if (!PhotonNetwork.IsMasterClient && photonView.IsMine)
+		{
+			if (carRenderer != null && opponentCar != null)
+			{
+				carRenderer.material = opponentCar;
+				Debug.Log("Changed material for non-master player's car.");
+			}
+		}
+	}
 	private void Update ()
 	{
 		for (int i = 0; i < Wheels.Length; i++)
@@ -175,7 +213,9 @@ public class CarController :MonoBehaviour
 		CurrentSpeed = RB.velocity.magnitude;
 
 		UpdateSteerAngleLogic ();
-		UpdateRpmAndTorqueLogic ();
+
+		UpdateRpmAndTorqueLogic();
+		UpdateDriftPoints();
 
 		//Find max slip and update braking ground logic.
 		CurrentMaxSlip = Wheels[0].CurrentMaxSlip;
@@ -435,16 +475,100 @@ public class CarController :MonoBehaviour
 		PlayBackfireWithProbability (GetCarConfig.ProbabilityBackfire);
 	}
 
-	void PlayBackfireWithProbability (float probability)
+	void PlayBackfireWithProbability(float probability)
 	{
-		if (Random.Range (0f, 1f) <= probability)
+		if (Random.Range(0f, 1f) <= probability)
 		{
-			BackFireAction.SafeInvoke ();
+			if (photonView.IsMine || !PhotonNetwork.InRoom) // Only owner or offline mode triggers it
+			{
+				photonView.RPC("RPC_PlayBackfire", RpcTarget.All);
+			}
 		}
 	}
 
+
 	#endregion
 
+	private void UpdateDriftPoints()
+	{
+		float angle = Mathf.Abs(VelocityAngle);
+		bool isValidDrift = angle > minDriftAngle && angle < maxDriftAngle && CarDirection > 0 && CurrentSpeed > 5f;
+
+		if (isValidDrift)
+		{
+			isDrifting = true;
+			driftGraceTimer = driftGraceTime;
+			currentDriftTime += Time.fixedDeltaTime;
+
+			float intensity = Mathf.InverseLerp(minDriftAngle, maxDriftAngle, angle);
+			float pointsThisFrame = intensity * driftPointMultiplier * Time.fixedDeltaTime;
+			driftScore += pointsThisFrame;
+
+			RC_UIManager.Instance?.ShowDrift(driftScore);
+		}
+		else if (isDrifting)
+		{
+			if (driftGraceTimer > 0)
+			{
+				driftGraceTimer -= Time.fixedDeltaTime;
+				RC_UIManager.Instance?.ShowDrift(driftScore);
+			}
+			else
+			{
+				isDrifting = false;
+				Debug.Log($"Drift Ended! Score: {driftScore:F0}");
+
+				OnDriftEnd(driftScore); // ✅ Now handles all logic
+				driftScore = 0f;
+				currentDriftTime = 0f;
+			}
+		}
+	}
+
+
+
+	public void OnDriftEnd(float driftScore)
+	{
+		float currentTime = Time.time;
+
+		// Add score to total
+		totalDriftPoints += driftScore;
+	RC_UIManager.Instance?.ShowTotalDrift(totalDriftPoints);
+
+		// Drift Chain Logic
+		if (driftScore >= 1500f)
+		{
+			if (currentTime - lastDriftEndTime <= driftChainThreshold)
+			{
+				driftChainCount++;
+			}
+			else
+			{
+				driftChainCount = 1;
+			}
+
+			// Show Chain popup only if it's a valid chain
+			if (driftChainCount >= 3)
+			{
+				RC_UIManager.Instance?.ShowDriftChain(driftChainCount);
+			}
+		}
+		else
+		{
+			driftChainCount = 0; // Reset chain on weak drift
+		}
+
+		// Show special drift achievement
+		if (driftScore >= 3000f)
+		{
+			RC_UIManager.Instance?.ShowPerfectDrift();
+		}
+
+		lastDriftEndTime = currentTime;
+
+		// Hide active drift and show final
+		RC_UIManager.Instance?.HideDrift();
+	}
 
 	private void OnDrawGizmosSelected ()
 	{
@@ -465,6 +589,11 @@ public class CarController :MonoBehaviour
 		Gizmos.DrawWireSphere (velocity, 0.2f);
 
 		Gizmos.color = Color.white;
+	}
+	[PunRPC]
+	void RPC_PlayBackfire()
+	{
+		BackFireAction.SafeInvoke();
 	}
 
 }

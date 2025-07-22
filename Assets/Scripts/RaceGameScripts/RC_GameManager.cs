@@ -57,20 +57,20 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
     {
         Transform spawnPoint = PhotonNetwork.IsMasterClient ? spawnPointMasterClient : spawnPointOtherPlayer;
 
-        string prefabToSpawn = PhotonNetwork.IsMasterClient ? carPrefab.name : opponentPrefab.name;
-        GameObject car = PhotonNetwork.Instantiate(prefabToSpawn, spawnPoint.position, spawnPoint.rotation);
+        GameObject car = PhotonNetwork.Instantiate(carPrefab.name, spawnPoint.position, spawnPoint.rotation);
 
         Debug.Log($"[Multiplayer] Car spawned for {(PhotonNetwork.IsMasterClient ? "MasterClient" : "Other Player")} at {spawnPoint.name}");
     }
 
     void SpawnForAIMatch()
     {
-        // Local player car
-        GameObject playerCar = Instantiate(carPrefab, spawnPointMasterClient.position, spawnPointMasterClient.rotation);
+        // Local player car (photonView.IsMine == true)
+        GameObject playerCar = PhotonNetwork.Instantiate(carPrefab.name, spawnPointMasterClient.position, spawnPointMasterClient.rotation);
 
-        // AI opponent car
+        // AI opponent (can be non-networked since it's controlled locally)
         GameObject aiCar = Instantiate(opponentPrefab, spawnPointOtherPlayer.position, spawnPointOtherPlayer.rotation);
 
         Debug.Log("[AI Match] Spawned player car and AI opponent.");
     }
+
 }
