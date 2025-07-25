@@ -13,9 +13,7 @@ public class LobbyUI : MonoBehaviour
     #region UI References
     [Header("AI Match Toggle")]
     public Toggle aiMatchToggle;
-    public CanvasGroup myPanelCanvasGroup;
     public Image player2Image;
-    public CanvasGroup gamePanel;
     public TextMeshProUGUI startTimeText;
     #endregion
 
@@ -50,6 +48,10 @@ public class LobbyUI : MonoBehaviour
         //UIUtils.FadeCanvasGroup(gamePanel, 0, 0.2f, false);
         PhotonManager.Instance.stringGameName = gameName;
     }
-
+    public void StartMatch()
+    {
+        StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 0, 0.2f, false));
+        PhotonManager.Instance.StartMatch();
+    }
     #endregion
 }

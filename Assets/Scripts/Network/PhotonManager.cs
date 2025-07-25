@@ -16,7 +16,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public float matchmakingTimeout = 5f;
     public bool allowAIMatch = true;
     public bool isAIMatch;
-    public string stringGameName;
+    public string stringGameName="RollingGame";
     #endregion
 
     #region UI References
@@ -100,23 +100,25 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     #region Photon Callbacks
     public override void OnConnectedToMaster()
     {
-        if (StartButton == null)
-        {
-            StartButton = GameObject.FindGameObjectWithTag("StartButton");
+        Debug.Log("Connect to master");
+      StartCoroutine(  UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
+        //if (StartButton == null)
+        //{
+        //    StartButton = GameObject.FindGameObjectWithTag("StartButton");
 
-            if (StartButton != null)
-            {
-                StartButton.GetComponent<Button>().onClick.AddListener(StartMatch);
-            }
-            else
-            {
-                Debug.LogWarning("StartButton (Button_Play) not found in the scene.");
-                return;
-            }
-        }
+        //    if (StartButton != null)
+        //    {
+        //        StartButton.GetComponent<Button>().onClick.AddListener(StartMatch);
+        //    }
+        //    else
+        //    {
+        //        Debug.LogWarning("StartButton (Button_Play) not found in the scene.");
+        //        return;
+        //    }
+        //}
 
-        StartButton.transform.localScale = Vector3.zero;
-        StartButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+        //StartButton.transform.localScale = Vector3.zero;
+        //StartButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
     }
 
     public override void OnJoinRandomFailed(short returnCode, string message)
@@ -129,7 +131,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         IsMasterClient = PhotonNetwork.IsMasterClient;
         IsOtherPlayer = !PhotonNetwork.IsMasterClient;
 
-        StartCoroutine(UIUtils.FadeCanvasGroup(LobbyUI.Instance.myPanelCanvasGroup, 1f, 0.5f, true));
+        StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 1f, 0.5f, true));
         StartCoroutine(WaitForOpponent());
     }
 

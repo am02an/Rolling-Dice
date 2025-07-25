@@ -137,7 +137,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-
+   
     public void UpdateDiceFace(int diceID, int faceIndex)
     {
         diceRoller[diceID - 1].diceImage.sprite = diceRoller[diceID - 1].diceFaces[faceIndex];

@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Car
   - ResetDriftCollision
+  - StartButton
   layers:
   - Default
   - TransparentFX
@@ -21,7 +22,7 @@ TagManager:
   - Metal
   - Rubber
   - FinishZone
-  - 
+  - Street
   - 
   - 
   - 
