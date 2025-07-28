@@ -69,7 +69,7 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
         GameObject playerCar = PhotonNetwork.Instantiate(carPrefab.name, spawnPointMasterClient.position, spawnPointMasterClient.rotation);
 
         // AI opponent (can be non-networked since it's controlled locally)
-        GameObject aiCar = Instantiate(Aicar, spawnPointOtherPlayer.position, spawnPointOtherPlayer.rotation);
+       // GameObject aiCar = Instantiate(Aicar, spawnPointOtherPlayer.position, spawnPointOtherPlayer.rotation);
 
         Debug.Log("[AI Match] Spawned player car and AI opponent.");
     }

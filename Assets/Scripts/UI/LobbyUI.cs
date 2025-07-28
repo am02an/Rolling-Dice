@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Handles the lobby UI functionality including toggling AI match settings,
@@ -25,10 +26,10 @@ public class LobbyUI : MonoBehaviour
 
     private void Start()
     {
-        if (PhotonManager.Instance != null)
-            aiMatchToggle.isOn = PhotonManager.Instance.allowAIMatch;
+        //if (PhotonManager.Instance != null)
+        //    aiMatchToggle.isOn = PhotonManager.Instance.allowAIMatch;
 
-        aiMatchToggle.onValueChanged.AddListener(OnAIMatchToggleChanged);
+        //aiMatchToggle.onValueChanged.AddListener(OnAIMatchToggleChanged);
     }
     #endregion
 
@@ -47,11 +48,21 @@ public class LobbyUI : MonoBehaviour
     {
         //UIUtils.FadeCanvasGroup(gamePanel, 0, 0.2f, false);
         PhotonManager.Instance.stringGameName = gameName;
+        StartMatch();
     }
     public void StartMatch()
     {
         StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 0, 0.2f, false));
         PhotonManager.Instance.StartMatch();
+    }
+    public void MoveToRaceMainMenu()
+    {
+        SceneManager.LoadScene("RacingMainMenu");
+    }
+   public void QuickMatch()
+    {
+
+        SceneManager.LoadScene("RacingGame");
     }
     #endregion
 }

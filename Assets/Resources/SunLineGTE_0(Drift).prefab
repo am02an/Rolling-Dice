@@ -986,6 +986,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aeb67c03a9a7bb745b02d885278296b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isAI: 0
+  aiSteering: 0
+  aiThrottle: 1
+  aiBrake: 0
 --- !u!81 &769451290001826353
 AudioListener:
   m_ObjectHideFlags: 0

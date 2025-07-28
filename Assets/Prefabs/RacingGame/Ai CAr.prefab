@@ -5132,7 +5132,7 @@ MonoBehaviour:
   NavMeshLayers:
   - Walkable
   MaxSteeringAngle: 45
-  MaxRPM: 200
+  MaxRPM: 400
   ShowGizmos: 1
   Debugger: 1
   Patrol: 1
