@@ -52,7 +52,11 @@ public class LobbyUI : MonoBehaviour
     }
     public void StartMatch()
     {
-        StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 0, 0.2f, false));
+        if (!PhotonManager.Instance.singlePlayermatch)
+        {
+            PhotonManager.Instance.matchMaking.GetComponent<Canvas>().sortingOrder = 2;
+            StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 1, 0.2f, true));
+        }
         PhotonManager.Instance.StartMatch();
     }
     public void MoveToRaceMainMenu()

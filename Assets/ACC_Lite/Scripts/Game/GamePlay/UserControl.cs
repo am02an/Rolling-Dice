@@ -48,7 +48,7 @@ public class UserControl : MonoBehaviour
             // Apply AI control to car
             ControlledCar.UpdateControls(Horizontal, Vertical, Brake);
         }
-        else if (photonView.IsMine)
+        else if (photonView.IsMine && RC_UIManager.Instance.CanStartRace)
         {
             if (CurrentUIControl != null && CurrentUIControl.ControlInUse)
             {

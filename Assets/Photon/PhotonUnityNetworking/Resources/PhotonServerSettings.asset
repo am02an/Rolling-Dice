@@ -54,6 +54,9 @@ MonoBehaviour:
   - RPC_UpdatePlayerProgress
   - RPC_SyncDiceSprite
   - RPC_PlayBackfire
+  - UpdatePlayerScore
+  - UpdateScoreForSide
+  - ShowWinner
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

@@ -15,9 +15,6 @@ EditorBuildSettings:
     path: Assets/Scenes/RacingGame.unity
     guid: 44d2773a38df5e44083dca6468c8dba3
   - enabled: 1
-    path: Assets/Scenes/SnowTrack.unity
-    guid: 55357f48a3e2b4643b0983826b854f64
-  - enabled: 1
     path: Assets/Scenes/RacingMainMenu.unity
     guid: 4b229dd6cf0bd324895276652602268d
   m_configObjects:

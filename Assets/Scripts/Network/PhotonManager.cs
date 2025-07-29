@@ -16,14 +16,19 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public float matchmakingTimeout = 5f;
     public bool allowAIMatch = true;
     public bool isAIMatch;
+    public bool singlePlayermatch;
+
+
     public string stringGameName="RollingGame";
     #endregion
 
     #region UI References
+    public GameObject matchMaking;
     [SerializeField] private GameObject StartButton;
     public List<Sprite> opponentSprites;
     public float spriteChangeInterval = 0.3f;
     private Coroutine characterCycleCoroutine;
+
     #endregion
 
     #region Opponent Animation
@@ -45,6 +50,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            DontDestroyOnLoad(matchMaking);
         }
         else Destroy(gameObject);
     }
@@ -65,11 +71,18 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         yield return new WaitUntil(() => !string.IsNullOrWhiteSpace(stringGameName));
 
         // Animate the button
-        StartButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+        if (StartButton != null)
+        {
+            StartButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+        }
     }
     public void StartMatch()
     {
-        StartButton.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.OutBack);
+        if (StartButton != null)
+        {
+
+            StartButton.transform.DOScale(Vector3.zero, 0.5f).SetEase(Ease.OutBack);
+        }
         AudioManager.Instance.PlaySFX(AudioManager.Instance.ClickSound);
 
         if (PhotonNetwork.IsConnected && PhotonNetwork.IsConnectedAndReady && PhotonNetwork.Server == ServerConnection.MasterServer)
@@ -130,9 +143,18 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     {
         IsMasterClient = PhotonNetwork.IsMasterClient;
         IsOtherPlayer = !PhotonNetwork.IsMasterClient;
-
+        matchMaking.GetComponent<Canvas>().sortingOrder = 2;
         StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 1f, 0.5f, true));
-        StartCoroutine(WaitForOpponent());
+        if (singlePlayermatch)
+        {
+            matchMaking.GetComponent<Canvas>().sortingOrder = -1;
+            StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
+            PhotonNetwork.LoadLevel(stringGameName);
+        }
+        else
+        {
+            StartCoroutine(WaitForOpponent());
+        }
     }
 
     public override void OnPlayerLeftRoom(Player otherPlayer)
@@ -191,6 +213,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                 isAIMatch = false;
                 LobbyUI.Instance.startTimeText.text = "Player found!";
                 yield return new WaitForSeconds(2f);
+                matchMaking.GetComponent<Canvas>().sortingOrder = -1;
+                StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
                 PhotonNetwork.LoadLevel(stringGameName);
                 yield break;
             }
@@ -200,6 +224,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                 PlayerPrefs.SetInt("PlayWithBot", 1);
                 LobbyUI.Instance.startTimeText.text = "No player found. Starting with bot...";
                 yield return new WaitForSeconds(2f);
+                matchMaking.GetComponent<Canvas>().sortingOrder = -1;
+                StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
                 PhotonNetwork.LoadLevel(stringGameName);
                 yield break;
             }

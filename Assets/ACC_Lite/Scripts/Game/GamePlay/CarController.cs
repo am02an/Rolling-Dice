@@ -504,14 +504,14 @@ public class CarController : MonoBehaviourPun
 			float pointsThisFrame = intensity * driftPointMultiplier * Time.fixedDeltaTime;
 			driftScore += pointsThisFrame;
 
-			RC_UIManager.Instance?.ShowDrift(driftScore);
+			RC_UIManager.Instance?.ShowDrift(driftScore,photonView);
 		}
 		else if (isDrifting)
 		{
 			if (driftGraceTimer > 0)
 			{
 				driftGraceTimer -= Time.fixedDeltaTime;
-				RC_UIManager.Instance?.ShowDrift(driftScore);
+				RC_UIManager.Instance?.ShowDrift(driftScore,photonView);
 			}
 			else
 			{
@@ -533,7 +533,13 @@ public class CarController : MonoBehaviourPun
 
 		// Add score to total
 		totalDriftPoints += driftScore;
-	RC_UIManager.Instance?.ShowTotalDrift(totalDriftPoints);
+		RC_RPCManager.Instance.SetMyScore((int)totalDriftPoints);
+
+		// XP reward based on drift score
+		int xpToAdd = Mathf.Clamp(Mathf.RoundToInt(driftScore / 50f), 1, 100); // Example: 2500 drift → 50 XP
+		RC_MainMenuUI.Instance?.AddXP(xpToAdd);
+
+		// 🔥 XP added here
 
 		// Drift Chain Logic
 		if (driftScore >= 1500f)
@@ -547,7 +553,6 @@ public class CarController : MonoBehaviourPun
 				driftChainCount = 1;
 			}
 
-			// Show Chain popup only if it's a valid chain
 			if (driftChainCount >= 3)
 			{
 				RC_UIManager.Instance?.ShowDriftChain(driftChainCount);
@@ -555,10 +560,9 @@ public class CarController : MonoBehaviourPun
 		}
 		else
 		{
-			driftChainCount = 0; // Reset chain on weak drift
+			driftChainCount = 0;
 		}
 
-		// Show special drift achievement
 		if (driftScore >= 3000f)
 		{
 			RC_UIManager.Instance?.ShowPerfectDrift();
@@ -566,8 +570,7 @@ public class CarController : MonoBehaviourPun
 
 		lastDriftEndTime = currentTime;
 
-		// Hide active drift and show final
-		RC_UIManager.Instance?.HideDrift();
+		RC_UIManager.Instance?.HideDrift(photonView);
 	}
 
 	private void OnDrawGizmosSelected ()
