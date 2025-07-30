@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
+using DG.Tweening;
 using Photon.Pun;
 /// <summary>
 /// Main car controller
@@ -35,9 +37,22 @@ public class CarController : MonoBehaviourPun
 	private float lastDriftEndTime = -10f;
 	private int driftChainCount = 0;
 	public float driftChainThreshold = 2f; // Time allowed between drifts to keep chaining
+	[Header("Track Detaction")]
+	[SerializeField] private LayerMask trackLayerMask; // Assign to "Track" in Inspector
+	[SerializeField] private float raycastDistance = 5f; // Height from which to check
+	[SerializeField] private Transform rayOrigin;
+	[SerializeField] private float alertDelay = 2f;//
+	[Header("Score Penalty")]
+	[SerializeField] private int scorePenalty = 5;
+	[SerializeField] private float penaltyInterval = 5f;
+	[Header("UI Alert")]
+	
+	[SerializeField] private float alertTweenDuration = 0.5f;
 
-
-
+	private bool isOffTrack = false;
+	private Tween alertTween;
+	private float scoreDeductTimer = 0f;
+	private float timeOffTrack = 0f;
 	#region Properties of car parameters
 
 	float MaxMotorTorque;
@@ -162,6 +177,8 @@ public class CarController : MonoBehaviourPun
     private void Start()
     {
 		SetCarMaterialIfNotMaster();
+		int actorNumber = GetComponent<PhotonView>().Owner.ActorNumber;
+		Debug.Log($"This car belongs to Actor {actorNumber}");
 	}
     /// <summary>
     /// Update controls of car, from user control (TODO AI control).
@@ -199,12 +216,81 @@ public class CarController : MonoBehaviourPun
 			}
 		}
 	}
+	private void CheckIfOnTrack()
+	{
+		Vector3 origin = rayOrigin != null ? rayOrigin.position : transform.position;
+
+		if (Physics.Raycast(origin, Vector3.down, out RaycastHit hit, raycastDistance, trackLayerMask))
+		{
+			Debug.DrawRay(origin, Vector3.down * raycastDistance, Color.green);
+
+			if (isOffTrack)
+			{
+				isOffTrack = false;
+				timeOffTrack = 0f;
+				scoreDeductTimer = 0f;
+				HideAlert();
+			}
+		}
+		else
+		{
+			Debug.DrawRay(origin, Vector3.down * raycastDistance, Color.red);
+
+			timeOffTrack += Time.deltaTime;
+			RC_UIManager.Instance.timerforAlert.text = timeOffTrack.ToString("F0");
+			if (timeOffTrack >= alertDelay && !isOffTrack)
+			{
+				isOffTrack = true;
+				ShowAlert("Move back to the track!");
+			}
+
+			if (timeOffTrack >= penaltyInterval)
+			{
+				scoreDeductTimer += Time.deltaTime;
+
+				if (scoreDeductTimer >= penaltyInterval)
+				{
+					DeductScore();
+					scoreDeductTimer = 0f; // Reset for next deduction
+				}
+			}
+		}
+	}
+
+	private void HideAlert()
+	{
+		alertTween?.Kill();
+		RC_UIManager.Instance. alertText.transform.parent.gameObject.SetActive(false);
+	}
+
+	private void DeductScore()
+	{
+		// Call a score manager or GameManager to reduce score
+		Debug.Log("Score deducted: -" + scorePenalty);
+		totalDriftPoints -= scorePenalty;
+		RC_RPCManager.Instance.SetMyScore((int)totalDriftPoints);
+	 // You can customize this
+	}
+	private void ShowAlert(string message)
+	{
+		RC_UIManager.Instance. alertText.text = message;
+		RC_UIManager.Instance.alertText.transform.parent.gameObject.SetActive(true);
+
+		alertTween?.Kill();
+
+		alertTween = RC_UIManager.Instance.alertText.rectTransform
+			.DOShakeAnchorPos(alertTweenDuration, strength: new Vector2(25, 0), vibrato: 5)
+			.SetLoops(-1, LoopType.Yoyo);
+	}
 	private void Update ()
 	{
 		for (int i = 0; i < Wheels.Length; i++)
 		{
 			Wheels[i].UpdateVisual ();
 		}
+
+		if (photonView.IsMine) // Multiplayer: only local car checks
+			CheckIfOnTrack();
 	}
 
 	private void FixedUpdate ()
@@ -215,7 +301,6 @@ public class CarController : MonoBehaviourPun
 		UpdateSteerAngleLogic ();
 
 		UpdateRpmAndTorqueLogic();
-		UpdateDriftPoints();
 
 		//Find max slip and update braking ground logic.
 		CurrentMaxSlip = Wheels[0].CurrentMaxSlip;
@@ -245,6 +330,8 @@ public class CarController : MonoBehaviourPun
 			}
 		}
 
+		if (!photonView.IsMine) return; // ✅ Skip if not local player
+		UpdateDriftPoints();
 	}
 
 	#region Steer help logic
@@ -504,14 +591,14 @@ public class CarController : MonoBehaviourPun
 			float pointsThisFrame = intensity * driftPointMultiplier * Time.fixedDeltaTime;
 			driftScore += pointsThisFrame;
 
-			RC_UIManager.Instance?.ShowDrift(driftScore,photonView);
+			RC_UIManager.Instance?.ShowDrift(driftScore);
 		}
 		else if (isDrifting)
 		{
 			if (driftGraceTimer > 0)
 			{
 				driftGraceTimer -= Time.fixedDeltaTime;
-				RC_UIManager.Instance?.ShowDrift(driftScore,photonView);
+				RC_UIManager.Instance?.ShowDrift(driftScore);
 			}
 			else
 			{

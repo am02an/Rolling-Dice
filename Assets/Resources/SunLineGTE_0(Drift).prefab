@@ -938,6 +938,15 @@ MonoBehaviour:
   driftPointMultiplier: 100
   driftGraceTime: 2
   driftChainThreshold: 2
+  trackLayerMask:
+    serializedVersion: 2
+    m_Bits: 512
+  raycastDistance: 5
+  rayOrigin: {fileID: 8854042089510127423}
+  alertDelay: 2
+  scorePenalty: 5
+  penaltyInterval: 5
+  alertTweenDuration: 0.5
 --- !u!114 &3651673236216786702
 MonoBehaviour:
   m_ObjectHideFlags: 0

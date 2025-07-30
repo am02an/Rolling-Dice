@@ -1,4 +1,4 @@
-using Photon.Pun;
+﻿using Photon.Pun;
 using UnityEngine;
 using TMPro;
 
@@ -33,6 +33,12 @@ public class RC_RPCManager : MonoBehaviourPunCallbacks
             leftPlayerScoreText.text = "00";
             rightPlayerScoreText.text = "";
         }
+        else
+        {
+
+            leftPlayerScoreText.text = "00";
+            rightPlayerScoreText.text = "00";
+        }
     }
     public int GetLeftPlayerScore() => PhotonNetwork.IsMasterClient ? masterScore : otherScore;
     public int GetRightPlayerScore() => PhotonNetwork.IsMasterClient ? otherScore : masterScore;
@@ -42,9 +48,13 @@ public class RC_RPCManager : MonoBehaviourPunCallbacks
     {
         StartCountdown();
     }
+    public void CountDown()
+    {
+        photonView.RPC("RPC_StartCountdown", RpcTarget.All);
+    }
     public void StartCountdown()
     {
-        StartCoroutine(RC_UIManager.Instance. CountdownRoutine());
+        StartCoroutine(RC_UIManager.Instance.CountdownRoutine());
     }
 
     [PunRPC]
@@ -53,21 +63,40 @@ public class RC_RPCManager : MonoBehaviourPunCallbacks
         winnerLeftGO.SetActive(leftPlayerWins);
         winnerRightGO.SetActive(!leftPlayerWins);
     }
-
-    [PunRPC]
-    public void UpdateScoreForSide(bool isMasterClient, int newScore)
+    private void UpdateScoreUI(int actorNumber, int score)
     {
-        if (PhotonNetwork.IsMasterClient == isMasterClient)
-            leftPlayerScoreText.text = newScore.ToString();
+        if (PhotonNetwork.IsMasterClient == true)
+        {
+            leftPlayerScoreText.text = score.ToString();
+            Debug.Log($"[Local] Updated own score: {score}");
+        }
         else
-            rightPlayerScoreText.text = newScore.ToString();
+        {
+            rightPlayerScoreText.text = score.ToString();
+            Debug.Log($"[Local] Updated opponent score: {score}");
+        }
 
-        StoreScore(isMasterClient, newScore);
+        StoreScore(actorNumber, score);
     }
 
-    public void StoreScore(bool isMaster, int score)
+    [PunRPC]
+    public void UpdateScoreForPlayer(int actorNumber, int newScore)
     {
-        if (isMaster)
+        // 🚫 Prevent self from re-updating their own score through the RPC
+        if (actorNumber == PhotonNetwork.LocalPlayer.ActorNumber)
+        {
+            Debug.LogWarning("Received RPC for own actor — skipping update.");
+            return;
+        }
+
+        // ✅ Update opponent's score only
+        UpdateScoreUI(actorNumber, newScore);
+    }
+
+
+    public void StoreScore(int actorNumber, int score)
+    {
+        if (PhotonNetwork.IsMasterClient == true)
             masterScore = score;
         else
             otherScore = score;
@@ -75,8 +104,14 @@ public class RC_RPCManager : MonoBehaviourPunCallbacks
 
     public void SetMyScore(int newScore)
     {
-        bool isMaster = PhotonNetwork.IsMasterClient;
-        photonView.RPC("UpdateScoreForSide", RpcTarget.All, isMaster, newScore);
+        int myActorNumber = PhotonNetwork.LocalPlayer.ActorNumber;
+
+        // 1. Update score locally
+        UpdateScoreUI(myActorNumber, newScore);
+
+        // 2. Send score to opponent only (RpcTarget.Others)
+        photonView.RPC("UpdateScoreForPlayer", RpcTarget.Others, myActorNumber, newScore);
     }
+
 
 }

@@ -54,15 +54,40 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
         return 1.0f / deltaTime;
     }
 
+    private GameObject myCarInstance;
+    private GameObject opponentCarInstance;
+
     void SpawnCarForPlayer()
     {
-        Transform spawnPoint = PhotonNetwork.IsMasterClient ? spawnPointMasterClient : spawnPointOtherPlayer;
+        GameObject carToSpawn;
+        Transform spawnPoint;
 
-        GameObject car = PhotonNetwork.Instantiate(carPrefab.name, spawnPoint.position, spawnPoint.rotation);
+        if (PhotonNetwork.IsMasterClient)
+        {
+            // Master spawns their own car at master spawn point
+            carToSpawn = carPrefab;
+            spawnPoint = spawnPointMasterClient;
+        }
+        else
+        {
+            // Non-master spawns opponent (master)'s car at other player spawn point
+            carToSpawn = opponentPrefab;
+            spawnPoint = spawnPointOtherPlayer;
+        }
 
-        Debug.Log($"[Multiplayer] Car spawned for {(PhotonNetwork.IsMasterClient ? "MasterClient" : "Other Player")} at {spawnPoint.name}");
+        GameObject car = PhotonNetwork.Instantiate(carToSpawn.name, spawnPoint.position, spawnPoint.rotation);
+
+        // ActorNumber of owner (who controls the car)
+        int actorNumber = car.GetComponent<PhotonView>().Owner.ActorNumber;
+
+        Debug.Log($"[Multiplayer] Spawned car for ActorNumber: {actorNumber} at {spawnPoint.name}");
+
+        // Optionally store the instance
+        if (PhotonNetwork.LocalPlayer.ActorNumber == actorNumber)
+            myCarInstance = car;
+        else
+            opponentCarInstance = car;
     }
-
     void SpawnForAIMatch()
     {
         // Local player car (photonView.IsMine == true)

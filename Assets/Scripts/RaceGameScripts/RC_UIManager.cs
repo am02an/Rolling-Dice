@@ -15,6 +15,8 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
     public TextMeshProUGUI driftPoint;
     public TextMeshProUGUI totalDriftText;
     public TextMeshProUGUI driftPopupText;
+    public TextMeshProUGUI alertText;
+    public TextMeshProUGUI timerforAlert;
     [Header("CountDown")]
     public TextMeshProUGUI countdownText;
     public float delayBetweenCounts = 1f;
@@ -49,7 +51,8 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
     {
         if (PhotonNetwork.IsMasterClient)
         {
-            photonView.RPC("RPC_StartCountdown", RpcTarget.All);
+            RC_RPCManager.Instance.CountDown();
+          
         }
 
     }
@@ -143,15 +146,15 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
         yield return new WaitForSeconds(3);
         MoveToRaceMainMenu();
     }
-    public void ShowDrift(float currentDrift, PhotonView view)
+    public void ShowDrift(float currentDrift)
     {
 
 
         driftPoint.text = $"+{Mathf.FloorToInt(currentDrift)}";
 
-        if (currentDrift >= 2500)
+        if (currentDrift >= 1000)
             driftPoint.color = Color.red;
-        else if (currentDrift >= 1000)
+        else if (currentDrift >= 500)
             driftPoint.color = Color.yellow;
         else
             driftPoint.color = Color.white;

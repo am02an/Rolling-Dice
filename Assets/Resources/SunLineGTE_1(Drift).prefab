@@ -931,6 +931,20 @@ MonoBehaviour:
     MaxAngularVelocityHelpAngle: 90
     AngularVelucityInMaxAngle: 0.5
     AngularVelucityInMinAngle: 2
+  opponentCar: {fileID: 0}
+  carRenderer: {fileID: 0}
+  minDriftAngle: 10
+  maxDriftAngle: 45
+  driftPointMultiplier: 100
+  driftGraceTime: 2
+  driftChainThreshold: 2
+  trackLayerMask:
+    serializedVersion: 2
+    m_Bits: 512
+  raycastDistance: 5
+  rayOrigin: {fileID: 8854042089510127423}
+  alertMSg: {fileID: 0}
+  alertTweenDuration: 0.5
 --- !u!114 &3651673236216786702
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -979,6 +993,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aeb67c03a9a7bb745b02d885278296b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isAI: 0
+  aiSteering: 0
+  aiThrottle: 1
+  aiBrake: 0
 --- !u!81 &769451290001826353
 AudioListener:
   m_ObjectHideFlags: 0
