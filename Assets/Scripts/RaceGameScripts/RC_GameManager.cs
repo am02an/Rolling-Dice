@@ -2,6 +2,8 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 using TMPro;
+using System.Collections.Generic;
+using System.Collections;
 
 public class RC_GameManager : MonoBehaviourPunCallbacks
 {
@@ -17,6 +19,24 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
     public GameObject carPrefab;
     public GameObject opponentPrefab;
     public GameObject Aicar;
+    [Header("Results")]
+
+    public GameObject SingleplayerResult;
+    public GameObject win;
+    public GameObject lose;
+    [Header("SinglePlayer Results")]
+    public TextMeshProUGUI coinText;
+    public TextMeshProUGUI Dptext;
+    public TextMeshProUGUI XpText;
+    [Header("PVP Lose Results")]
+    public TextMeshProUGUI LosecoinText;
+    public TextMeshProUGUI LoseDptext;
+    public TextMeshProUGUI LoseXpText;
+    [Header("PVP Win Results")]
+    public TextMeshProUGUI WincoinText;
+    public TextMeshProUGUI WinDptext;
+    public TextMeshProUGUI WinXpText;
+
 
     private void Awake()
     {
@@ -37,7 +57,8 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
             SpawnCarForPlayer();
         }
 
-        GameController.Instance.Initcars(); // Common init
+        GameController.Instance.Initcars();
+       // Common init
     }
 
     private float deltaTime;
@@ -94,9 +115,46 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
         GameObject playerCar = PhotonNetwork.Instantiate(carPrefab.name, spawnPointMasterClient.position, spawnPointMasterClient.rotation);
 
         // AI opponent (can be non-networked since it's controlled locally)
-       // GameObject aiCar = Instantiate(Aicar, spawnPointOtherPlayer.position, spawnPointOtherPlayer.rotation);
+        // GameObject aiCar = Instantiate(Aicar, spawnPointOtherPlayer.position, spawnPointOtherPlayer.rotation);
 
         Debug.Log("[AI Match] Spawned player car and AI opponent.");
+    }
+    public void CheckForSoloWin()
+    {
+        StartCoroutine(WaitAndCheckWinner());
+    }
+
+    private IEnumerator WaitAndCheckWinner()
+    {
+        if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
+        {
+            Debug.Log("Only one player detected. Waiting 5 seconds...");
+
+            yield return new WaitForSeconds(5f);
+
+            // Check again after waiting, in case someone joined
+            if (PhotonNetwork.CurrentRoom.PlayerCount < 2)
+            {
+                Debug.Log("Still only one player. Declaring win.");
+                //winText.text = "You Win! (Opponent left)";
+                //winText.gameObject.SetActive(true);
+                win.gameObject.SetActive(true);
+                yield return new WaitForSeconds(2);
+               RC_UIManager.Instance. MoveToRaceMainMenu();
+                // You can also end game or return to lobby
+                // PhotonNetwork.LeaveRoom();
+                // SceneManager.LoadScene("MainMenu");
+            }
+            else
+            {
+                Debug.Log("Another player joined within 5 seconds. Continue game.");
+            }
+        }
+    }
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        base.OnPlayerLeftRoom(otherPlayer);
+        CheckForSoloWin();
     }
 
 }

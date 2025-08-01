@@ -149,6 +149,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         {
             matchMaking.GetComponent<Canvas>().sortingOrder = -1;
             StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
+
             PhotonNetwork.LoadLevel(stringGameName);
         }
         else
@@ -215,6 +216,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
                 yield return new WaitForSeconds(2f);
                 matchMaking.GetComponent<Canvas>().sortingOrder = -1;
                 StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
+                LoadingScreenManager.Instance.ShowLoadingScreen();
+
                 PhotonNetwork.LoadLevel(stringGameName);
                 yield break;
             }

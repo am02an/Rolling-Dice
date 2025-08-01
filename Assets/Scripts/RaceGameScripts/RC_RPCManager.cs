@@ -15,6 +15,8 @@ public class RC_RPCManager : MonoBehaviourPunCallbacks
     private int otherScore = 0;
     private PhotonView photonView;
 
+    private bool winnerIsLeft;
+
 
     private void Awake()
     {
@@ -42,7 +44,29 @@ public class RC_RPCManager : MonoBehaviourPunCallbacks
     }
     public int GetLeftPlayerScore() => PhotonNetwork.IsMasterClient ? masterScore : otherScore;
     public int GetRightPlayerScore() => PhotonNetwork.IsMasterClient ? otherScore : masterScore;
+    
 
+    public bool GetWinnerIsLeft()
+    {
+        return winnerIsLeft;
+    }
+    [PunRPC]
+    public void ConfirmCarSpawned()
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            GameController.Instance.spawnedPlayerCount++;
+
+            if (GameController.Instance.spawnedPlayerCount >= 2)
+            {
+                CountDown();
+            }
+        }
+    }
+    public void ConfirmPlayers()
+    {
+        photonView.RPC("ConfirmCarSpawned", RpcTarget.MasterClient);
+    }
     [PunRPC]
     public void RPC_StartCountdown()
     {
@@ -56,7 +80,11 @@ public class RC_RPCManager : MonoBehaviourPunCallbacks
     {
         StartCoroutine(RC_UIManager.Instance.CountdownRoutine());
     }
-
+    public void ShowResult(bool leftWins)
+    {
+        winnerIsLeft = leftWins;
+        photonView.RPC("ShowWinner", RpcTarget.All, leftWins);
+    }
     [PunRPC]
     public void ShowWinner(bool leftPlayerWins)
     {
@@ -65,19 +93,22 @@ public class RC_RPCManager : MonoBehaviourPunCallbacks
     }
     private void UpdateScoreUI(int actorNumber, int score)
     {
-        if (PhotonNetwork.IsMasterClient == true)
+        if (PhotonNetwork.MasterClient != null && actorNumber == PhotonNetwork.MasterClient.ActorNumber)
         {
+            // Score belongs to the MasterClient → always show on left
             leftPlayerScoreText.text = score.ToString();
-            Debug.Log($"[Local] Updated own score: {score}");
+            Debug.Log($"[ScoreUI] MasterClient score updated: {score}");
         }
         else
         {
+            // Score belongs to the non-master player → always show on right
             rightPlayerScoreText.text = score.ToString();
-            Debug.Log($"[Local] Updated opponent score: {score}");
+            Debug.Log($"[ScoreUI] Other player's score updated: {score}");
         }
 
         StoreScore(actorNumber, score);
     }
+
 
     [PunRPC]
     public void UpdateScoreForPlayer(int actorNumber, int newScore)

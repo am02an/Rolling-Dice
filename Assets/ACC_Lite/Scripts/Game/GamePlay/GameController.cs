@@ -19,6 +19,7 @@ public class GameController :MonoBehaviour
 	CarController m_PlayerCar;
 	List<CarController> Cars = new List<CarController>();
 	int CurrentCarIndex = 0;
+	public int spawnedPlayerCount;
 
 	protected virtual void Awake ()
 	{
@@ -54,7 +55,7 @@ public class GameController :MonoBehaviour
 		m_PlayerCar = Cars[0];
 		m_PlayerCar.GetComponent<UserControl> ().enabled = true;
 		m_PlayerCar.GetComponent<AudioListener> ().enabled = true;
-
+		spawnedPlayerCount = Cars.Count;
 		if (NextCarButton)
         {
 			NextCarButton.onClick.AddListener (NextCar);

@@ -619,17 +619,17 @@ public class CarController : MonoBehaviourPun
 		float currentTime = Time.time;
 
 		// Add score to total
+		RC_UIManager.Instance.lastDriftStart = driftScore;
+		RC_UIManager.Instance.totalDriftPoints += driftScore;
 		totalDriftPoints += driftScore;
 		RC_RPCManager.Instance.SetMyScore((int)totalDriftPoints);
 
 		// XP reward based on drift score
-		int xpToAdd = Mathf.Clamp(Mathf.RoundToInt(driftScore / 50f), 1, 100); // Example: 2500 drift → 50 XP
-		RC_MainMenuUI.Instance?.AddXP(xpToAdd);
 
 		// 🔥 XP added here
 
 		// Drift Chain Logic
-		if (driftScore >= 1500f)
+		if (driftScore >= 700f)
 		{
 			if (currentTime - lastDriftEndTime <= driftChainThreshold)
 			{
@@ -650,7 +650,7 @@ public class CarController : MonoBehaviourPun
 			driftChainCount = 0;
 		}
 
-		if (driftScore >= 3000f)
+		if (driftScore >= 1000f)
 		{
 			RC_UIManager.Instance?.ShowPerfectDrift();
 		}

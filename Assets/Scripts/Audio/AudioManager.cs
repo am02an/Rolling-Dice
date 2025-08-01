@@ -134,5 +134,13 @@ public class AudioManager : MonoBehaviour
         }
         source.volume = sfxVolume;
     }
+    public void PlaySound(AudioClip clip)
+    {
+        if (clip != null)
+        {
+            AudioSource availableSource = GetAvailableSFXSource();
+            availableSource.PlayOneShot(clip);
+        }
+    }
     #endregion
 }

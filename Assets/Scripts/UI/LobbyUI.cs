@@ -61,6 +61,7 @@ public class LobbyUI : MonoBehaviour
     }
     public void MoveToRaceMainMenu()
     {
+        LoadingScreenManager.Instance.ShowLoadingScreen();
         SceneManager.LoadScene("RacingMainMenu");
     }
    public void QuickMatch()

@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -17,11 +17,11 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
     public TextMeshProUGUI driftPopupText;
     public TextMeshProUGUI alertText;
     public TextMeshProUGUI timerforAlert;
+    public TextMeshProUGUI resultText;
     [Header("CountDown")]
     public TextMeshProUGUI countdownText;
     public float delayBetweenCounts = 1f;
     public TextMeshProUGUI timerText;
-    public TextMeshProUGUI resultText;
 
     public float totalTimeInSeconds = 90f; // 1 minute 30 seconds
 
@@ -29,7 +29,7 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
     private bool isTimerRunning = false;
 
     public int dragPoints = 0; 
-    private float totalDriftPoints = 0f;
+    public float totalDriftPoints = 0f;
     public bool CanStartRace=false;
 
     private void Awake()
@@ -51,13 +51,25 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
     {
         if (PhotonNetwork.IsMasterClient)
         {
-            RC_RPCManager.Instance.CountDown();
-          
+            StartCoroutine(WaitForPlayersThenStartCountdown());
         }
 
     }
+    private IEnumerator WaitForPlayersThenStartCountdown()
+    {
+        if (!PhotonManager.Instance.singlePlayermatch)
+        {
+            while (GameController.Instance.spawnedPlayerCount < 2)
+            {
+                yield return null; // wait 1 frame and check again
+            }
+        }
+
+        RC_RPCManager.Instance.CountDown();
+    }
     public IEnumerator CountdownRoutine()
     {
+        AudioManager.Instance.SetBGMVolume( 0.1f);
         string[] countdownStrings = { "3", "2", "1", "GO!" };
 
         foreach (string count in countdownStrings)
@@ -73,7 +85,7 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
             seq.AppendInterval(0.5f);
             seq.Append(countdownText.DOFade(0f, 0.3f));
             seq.Play();
-
+            AudioManager.Instance.PlaySound(AudioManager.Instance.countDown);
             yield return new WaitForSeconds(delayBetweenCounts);
         }
 
@@ -120,49 +132,136 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
 
     IEnumerator ShowDragPointTotal()
     {
-        resultText.transform.parent.gameObject.SetActive(true);
+       
 
         int myScore = (int)totalDriftPoints;
 
-        // Send your score to everyone
-        RC_RPCManager.Instance.SetMyScore(myScore);
+        // Send your score to others
 
-        // Wait a bit for RPCs to sync
+
+        // Wait for synchronization
         yield return new WaitForSeconds(1f);
 
-        // Only MasterClient decides winner
+        // Only Master decides result
         if (PhotonNetwork.IsMasterClient)
         {
             int leftScore = RC_RPCManager.Instance.GetLeftPlayerScore();
             int rightScore = RC_RPCManager.Instance.GetRightPlayerScore();
 
+            if(PhotonManager.Instance.singlePlayermatch)
+            {
+                resultText.text = $"Total Drag Points:\nLeft: {leftScore}";
+            }
+            else
+            {
+
+            }
+            // Show total points
             resultText.text = $"Total Drag Points:\nLeft: {leftScore}\nRight: {rightScore}";
 
-            // Send winner info to all clients
             bool leftWins = leftScore > rightScore;
-           // photonView.RPC("ShowWinner", RpcTarget.All, leftWins);
+
+            // Send result to all clients
+            RC_RPCManager.Instance.ShowResult(leftWins);
         }
 
-        yield return new WaitForSeconds(3);
+        // Wait for RPC to apply result
+        yield return new WaitForSeconds(0.5f);
+
+        // Show rewards and win/lose UI
+        yield return ShowWinLoseAndReward();
+
+        yield return new WaitForSeconds(5f);
+
         MoveToRaceMainMenu();
     }
+
+    IEnumerator ShowWinLoseAndReward()
+    {
+        int myScore = (int)totalDriftPoints;
+
+        // Reward Calculation
+        int rewardCoins = Mathf.RoundToInt(myScore * 0.5f); // 0.5 coins per DP
+        int rewardXP = Mathf.RoundToInt(myScore * 0.2f);    // 0.2 XP per DP
+
+        if (PhotonManager.Instance.isAIMatch)
+        {
+            // ---------- SINGLEPLAYER ----------
+            RC_GameManager.Instance.SingleplayerResult.SetActive(true);
+            RC_GameManager.Instance.coinText.text = rewardCoins.ToString();
+            RC_GameManager.Instance.Dptext.text = myScore.ToString();
+            RC_GameManager.Instance.XpText.text = rewardXP.ToString();
+        }
+        else
+        {
+            // ---------- MULTIPLAYER (PVP) ----------
+            bool isMaster = PhotonNetwork.IsMasterClient;
+            int myActor = PhotonNetwork.LocalPlayer.ActorNumber;
+            int masterActor = PhotonNetwork.MasterClient.ActorNumber;
+
+            bool iWon = false;
+
+            if (RC_RPCManager.Instance.GetWinnerIsLeft())
+            {
+                iWon = myActor == masterActor;
+            }
+            else
+            {
+                iWon = myActor != masterActor;
+            }
+
+            if (iWon)
+            {
+                RC_GameManager.Instance.win.SetActive(true);
+                RC_GameManager.Instance.WincoinText.text = rewardCoins.ToString();
+                RC_GameManager.Instance.WinDptext.text = myScore.ToString();
+                RC_GameManager.Instance.WinXpText.text = rewardXP.ToString();
+            }
+            else
+            {
+                RC_GameManager.Instance.lose.SetActive(true);
+                RC_GameManager.Instance.LosecoinText.text = rewardCoins.ToString();
+                RC_GameManager.Instance.LoseDptext.text = myScore.ToString();
+                RC_GameManager.Instance.LoseXpText.text = rewardXP.ToString();
+            }
+        }
+
+        // Save rewards
+        RC_MainMenuUI.Instance.AddCoins(rewardCoins);
+        RC_MainMenuUI.Instance.AddXP(rewardXP);
+
+        yield return null;
+    }
+
+
+    public float lastDriftStart = 0f;
+
     public void ShowDrift(float currentDrift)
     {
+        // Difference from where this drift started
+        float displayDrift = currentDrift - lastDriftStart;
+        int roundedDrift = Mathf.FloorToInt(currentDrift);
 
+        driftPoint.text = $"+{roundedDrift}";
 
-        driftPoint.text = $"+{Mathf.FloorToInt(currentDrift)}";
+        // Show updated total (live preview, not permanent yet)
+        RC_RPCManager.Instance.SetMyScore((int)(totalDriftPoints + roundedDrift));
 
-        if (currentDrift >= 1000)
+        // Color logic
+        if (displayDrift >= 1000)
             driftPoint.color = Color.red;
-        else if (currentDrift >= 500)
+        else if (displayDrift >= 500)
             driftPoint.color = Color.yellow;
         else
             driftPoint.color = Color.white;
 
+        // Animate
         driftPoint.transform.DOKill();
         driftPoint.transform.localScale = Vector3.one * 1.4f;
         driftPoint.transform.DOScale(Vector3.one, 0.3f).SetEase(Ease.OutBack);
     }
+
+
 
     public void MoveToRaceMainMenu()
     {
