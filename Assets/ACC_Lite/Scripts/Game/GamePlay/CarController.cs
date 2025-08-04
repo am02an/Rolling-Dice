@@ -265,10 +265,14 @@ public class CarController : MonoBehaviourPun
 
 	private void DeductScore()
 	{
-		// Call a score manager or GameManager to reduce score
-		Debug.Log("Score deducted: -" + scorePenalty);
-		totalDriftPoints -= scorePenalty;
-		RC_RPCManager.Instance.SetMyScore((int)totalDriftPoints);
+		if (totalDriftPoints > 0)
+		{
+
+			// Call a score manager or GameManager to reduce score
+			Debug.Log("Score deducted: -" + scorePenalty);
+			totalDriftPoints -= scorePenalty;
+			RC_RPCManager.Instance.SetMyScore((int)totalDriftPoints);
+		}
 	 // You can customize this
 	}
 	private void ShowAlert(string message)

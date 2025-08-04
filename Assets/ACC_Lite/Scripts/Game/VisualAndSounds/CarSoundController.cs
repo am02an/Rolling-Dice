@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using Photon.Pun;
 /// <summary>
 /// Car sound controller, for play car sound effects
 /// </summary>
@@ -34,25 +34,27 @@ public class CarSoundController :MonoBehaviour
 
 	void Update ()
 	{
-
-		//Engine PRM sound
-		EngineSource.pitch = (EngineRPM / MaxRPM) + PitchOffset;
-
-		//Slip sound logic
-		if (CarController.CurrentMaxSlip > MinSlipSound
-		)
+		if (GetComponent<PhotonView>().IsMine)
 		{
-			if (!SlipSource.isPlaying)
+			//Engine PRM sound
+			EngineSource.pitch = (EngineRPM / MaxRPM) + PitchOffset;
+
+			//Slip sound logic
+			if (CarController.CurrentMaxSlip > MinSlipSound
+			)
 			{
-				SlipSource.Play ();
+				if (!SlipSource.isPlaying)
+				{
+					SlipSource.Play();
+				}
+				var slipVolumeProcent = CarController.CurrentMaxSlip / MaxSlipForSound;
+				SlipSource.volume = slipVolumeProcent * 0.5f;
+				SlipSource.pitch = Mathf.Clamp(slipVolumeProcent, 0.75f, 1);
 			}
-			var slipVolumeProcent = CarController.CurrentMaxSlip / MaxSlipForSound;
-			SlipSource.volume = slipVolumeProcent * 0.5f;
-			SlipSource.pitch = Mathf.Clamp (slipVolumeProcent, 0.75f, 1);
-		}
-		else
-		{
-			SlipSource.Stop ();
+			else
+			{
+				SlipSource.Stop();
+			}
 		}
 	}
 

@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 /// <summary>
 /// Handles the lobby UI functionality including toggling AI match settings,
@@ -61,13 +62,19 @@ public class LobbyUI : MonoBehaviour
     }
     public void MoveToRaceMainMenu()
     {
-        LoadingScreenManager.Instance.ShowLoadingScreen();
-        SceneManager.LoadScene("RacingMainMenu");
+        LoadingScreenManager.Instance.ShowLoadingScreen(false, "RacingMainMenu");
+
     }
-   public void QuickMatch()
+    public void OffmatchMaking()
+    {
+     StartCoroutine(   PhotonManager.Instance.StopMatchmaking());
+    }
+    public void QuickMatch()
     {
 
         SceneManager.LoadScene("RacingGame");
     }
+   
+
     #endregion
 }

@@ -48,6 +48,7 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        LoadingScreenManager.Instance.HideLoadingScreen();
         if (PhotonManager.Instance.isAIMatch)
         {
             SpawnForAIMatch();
@@ -102,7 +103,7 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
         int actorNumber = car.GetComponent<PhotonView>().Owner.ActorNumber;
 
         Debug.Log($"[Multiplayer] Spawned car for ActorNumber: {actorNumber} at {spawnPoint.name}");
-
+        RC_RPCManager.Instance.ConfirmPlayers();
         // Optionally store the instance
         if (PhotonNetwork.LocalPlayer.ActorNumber == actorNumber)
             myCarInstance = car;

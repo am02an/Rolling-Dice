@@ -27,7 +27,7 @@ public class RC_MainMenuUI : MonoBehaviour
     // Called when clicking the start button
     public void StartSinglePlayerMatch()
     {
-        LoadingScreenManager.Instance.ShowLoadingScreen();
+     //   LoadingScreenManager.Instance.ShowLoadingScreen();
         PhotonManager.Instance.singlePlayermatch = true;
         LobbyUI.Instance.SetGameToPlay("RacingGame");
     }

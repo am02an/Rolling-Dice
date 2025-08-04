@@ -69,7 +69,7 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
     }
     public IEnumerator CountdownRoutine()
     {
-        AudioManager.Instance.SetBGMVolume( 0.1f);
+        AudioManager.Instance.SetBGMVolume(0.1f);
         string[] countdownStrings = { "3", "2", "1", "GO!" };
 
         foreach (string count in countdownStrings)
@@ -85,7 +85,13 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
             seq.AppendInterval(0.5f);
             seq.Append(countdownText.DOFade(0f, 0.3f));
             seq.Play();
-            AudioManager.Instance.PlaySound(AudioManager.Instance.countDown);
+
+            // Play sound
+            if (count == "GO!")
+                AudioManager.Instance.PlaySound(AudioManager.Instance.goSound); // Replace `goSound` with your actual AudioClip
+            else
+                AudioManager.Instance.PlaySound(AudioManager.Instance.countDown);
+
             yield return new WaitForSeconds(delayBetweenCounts);
         }
 
@@ -94,6 +100,7 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
         StartTimer();
         // Trigger game start logic here
     }
+
     public void StartMatch()
     {
         LobbyUI.Instance.SetGameToPlay("RacingGame");

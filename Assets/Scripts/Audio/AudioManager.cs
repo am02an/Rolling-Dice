@@ -16,6 +16,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip mainBackgroundMusic;
     public AudioClip ClickSound;
     public AudioClip countDown;
+    public AudioClip goSound;
     #endregion
 
     #region SFX Settings

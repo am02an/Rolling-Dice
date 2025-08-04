@@ -28,13 +28,15 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public List<Sprite> opponentSprites;
     public float spriteChangeInterval = 0.3f;
     private Coroutine characterCycleCoroutine;
+    private Coroutine matchmakingCoroutine;
+
 
     #endregion
 
     #region Opponent Animation
     public float moveSpeed = 20f;
     public float moveRange = 30f;
-    private bool isSearching = false;
+    public bool isSearching = false;
     private Vector2 startPos;
     #endregion
 
@@ -149,96 +151,184 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         {
             matchMaking.GetComponent<Canvas>().sortingOrder = -1;
             StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
+            LoadingScreenManager.Instance.ShowLoadingScreen(true, "RacingGame");
+            // Show loading screen
+            //LoadingScreenManager.Instance.ShowLoadingScreen();
 
-            PhotonNetwork.LoadLevel(stringGameName);
+            //// Start a coroutine to fake progress bar since Photon doesn't give actual progress
+            //StartCoroutine(FakeLoadingUntilSceneLoaded(stringGameName));
         }
         else
         {
-            StartCoroutine(WaitForOpponent());
+            Debug.Log("Startingmatching");
+            if (matchmakingCoroutine != null)
+            {
+                StopCoroutine(matchmakingCoroutine);
+                matchmakingCoroutine = null;
+            }
+
+            Debug.Log("Startingmatching"+" "+isSearching);
+            isSearching = true;
+            matchmakingCoroutine = StartCoroutine(WaitForOpponent());
         }
+    }
+    private IEnumerator FakeLoadingUntilSceneLoaded(string sceneName)
+    {
+        float progress = 0f;
+
+        // Start loading the scene via Photon
+        PhotonNetwork.LoadLevel(sceneName);
+
+        // Fake progress until scene actually loads
+        while (progress < 1f)
+        {
+            progress += Time.deltaTime * 0.3f; // adjust speed as needed
+            LoadingScreenManager.Instance.UpdateLoadingUI(progress);
+            yield return null;
+        }
+
+        LoadingScreenManager.Instance.UpdateLoadingUI(1f);
     }
 
-    public override void OnPlayerLeftRoom(Player otherPlayer)
-    {
-        if (PhotonNetwork.IsMasterClient)
-        {
-            DeclareVictoryToRemainingPlayer();
-        }
-    }
+    //public override void OnPlayerLeftRoom(Player otherPlayer)
+    //{
+    //    if (PhotonNetwork.IsMasterClient)
+    //    {
+    //        DeclareVictoryToRemainingPlayer();
+    //    }
+    //}
 
-    private void DeclareVictoryToRemainingPlayer()
-    {
-        if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
-        {
-            UIManager.Instance.ShowVictory();
-        }
-    }
+    //private void DeclareVictoryToRemainingPlayer()
+    //{
+    //    if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
+    //    {
+    //        RC_UIManager.Instance.ShowVictory();
+    //    }
+    //}
     #endregion
 
     #region Opponent Search
     private IEnumerator WaitForOpponent()
     {
-        while (true)
+        Debug.Log("[Matchmaking] Started waiting for opponent...");
+        isSearching = true;
+
+        startPos = LobbyUI.Instance.player2Image.rectTransform.anchoredPosition;
+        characterCycleCoroutine = StartCoroutine(CycleOpponentImages());
+
+        float timer = 0f;
+        float timeLeft = matchmakingTimeout;
+
+        while (PhotonNetwork.CurrentRoom.PlayerCount < 2 && timer < matchmakingTimeout && isSearching)
         {
-            isSearching = true;
-            startPos = LobbyUI.Instance.player2Image.rectTransform.anchoredPosition;
-            characterCycleCoroutine = StartCoroutine(CycleOpponentImages());
+            timer += Time.deltaTime;
+            timeLeft = Mathf.Max(0f, matchmakingTimeout - timer);
 
-            float timer = 0f;
-            float timeLeft = matchmakingTimeout;
-
-            while (PhotonNetwork.CurrentRoom.PlayerCount < 2 && timer < matchmakingTimeout)
+            if (LobbyUI.Instance != null)
             {
-                timer += Time.deltaTime;
-                timeLeft = Mathf.Max(0f, matchmakingTimeout - timer);
                 LobbyUI.Instance.startTimeText.text = $"Searching for player... <color=#00FF00>{Mathf.FloorToInt(timeLeft)}s</color>";
-
                 float offset = Mathf.PingPong(Time.time * moveSpeed, moveRange);
                 LobbyUI.Instance.player2Image.rectTransform.anchoredPosition = startPos + new Vector2(offset, 0);
-
-                yield return null;
             }
 
-            isSearching = false;
+            yield return null;
+        }
 
-            if (characterCycleCoroutine != null)
-                StopCoroutine(characterCycleCoroutine);
+        Debug.Log("[Matchmaking] Search ended. isSearching: " + isSearching + ", Players in room: " + PhotonNetwork.CurrentRoom.PlayerCount);
 
-            yield return StartCoroutine(SmoothStopPlayerImage());
+        isSearching = false;
 
-            int finalIndex = Random.Range(0, opponentSprites.Count);
-            LobbyUI.Instance.player2Image.sprite = opponentSprites[finalIndex];
+        // Stop cycling
+        if (characterCycleCoroutine != null)
+        {
+            StopCoroutine(characterCycleCoroutine);
+            Debug.Log("[Matchmaking] Stopped character cycling coroutine.");
+        }
 
-            if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
-            {
-                isAIMatch = false;
-                LobbyUI.Instance.startTimeText.text = "Player found!";
-                yield return new WaitForSeconds(2f);
-                matchMaking.GetComponent<Canvas>().sortingOrder = -1;
-                StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
-                LoadingScreenManager.Instance.ShowLoadingScreen();
+        yield return StartCoroutine(SmoothStopPlayerImage());
 
-                PhotonNetwork.LoadLevel(stringGameName);
-                yield break;
-            }
-            else if (allowAIMatch)
-            {
-                isAIMatch = true;
-                PlayerPrefs.SetInt("PlayWithBot", 1);
-                LobbyUI.Instance.startTimeText.text = "No player found. Starting with bot...";
-                yield return new WaitForSeconds(2f);
-                matchMaking.GetComponent<Canvas>().sortingOrder = -1;
-                StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
-                PhotonNetwork.LoadLevel(stringGameName);
-                yield break;
-            }
-            else
-            {
-                LobbyUI.Instance.startTimeText.text = "No player found. Retrying matchmaking...";
-                yield return new WaitForSeconds(2f);
-            }
+        //if (!isSearching)
+        //{
+        //    Debug.LogWarning("[Matchmaking] Search was cancelled by user.");
+        //    yield break;
+        //}
+
+        // Choose random opponent sprite
+        int finalIndex = Random.Range(0, opponentSprites.Count);
+        LobbyUI.Instance.player2Image.sprite = opponentSprites[finalIndex];
+
+        if (PhotonNetwork.CurrentRoom.PlayerCount == 2)
+        {
+            Debug.Log("[Matchmaking] Player found. Starting match...");
+            isAIMatch = false;
+            LobbyUI.Instance.startTimeText.text = "Player found!";
+            yield return new WaitForSeconds(2f);
+
+            matchMaking.GetComponent<Canvas>().sortingOrder = -1;
+            StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
+            LoadingScreenManager.Instance.ShowLoadingScreen(true, "RacingGame");
+        }
+        else if (allowAIMatch)
+        {
+            Debug.Log("[Matchmaking] No player found. Starting with bot.");
+            isAIMatch = true;
+            PlayerPrefs.SetInt("PlayWithBot", 1);
+            LobbyUI.Instance.startTimeText.text = "No player found. Starting with bot...";
+            yield return new WaitForSeconds(2f);
+
+            matchMaking.GetComponent<Canvas>().sortingOrder = -1;
+            StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
+            LoadingScreenManager.Instance.ShowLoadingScreen(true, "RacingGame");
+        }
+        else
+        {
+            Debug.LogWarning("[Matchmaking] No player found. Retrying matchmaking...");
+            LobbyUI.Instance.startTimeText.text = "No player found. Retrying matchmaking...";
+            yield return new WaitForSeconds(2f);
+            StartCoroutine(WaitForOpponent()); // Retry
         }
     }
+
+
+
+
+    public IEnumerator StopMatchmaking()
+    {
+        isSearching = false;
+
+        // Stop image cycling
+        if (characterCycleCoroutine != null)
+        {
+            StopCoroutine(characterCycleCoroutine);
+            characterCycleCoroutine = null;
+        }
+
+        // Stop the WaitForOpponent coroutine safely
+        StopAllCoroutines(); // Ensure any running coroutines like WaitForOpponent are stopped
+
+        // Reset UI after delay
+
+        if (LobbyUI.Instance != null)
+        {
+            LobbyUI.Instance.startTimeText.text = "Matchmaking cancelled";
+
+            // Reset opponent image position
+            LobbyUI.Instance.player2Image.rectTransform.anchoredPosition = startPos;
+
+            // Set default image
+            if (opponentSprites != null && opponentSprites.Count > 0)
+                LobbyUI.Instance.player2Image.sprite = opponentSprites[0];
+        }
+        PhotonNetwork.LeaveRoom();
+        yield return new WaitForSeconds(1.0f);
+        // Show matchmaking canvas again
+        matchMaking.GetComponent<Canvas>().sortingOrder = 0;
+
+        // Hide loading screen if it's still on
+        StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
+        LobbyUI.Instance.startTimeText.text = "Started waiting for opponent...";
+    }
+
 
     private IEnumerator CycleOpponentImages()
     {

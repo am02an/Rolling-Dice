@@ -5,7 +5,7 @@ public class UIUtils : MonoBehaviour
 {
     public static IEnumerator FadeCanvasGroup(string gameObjectName, float targetAlpha, float duration, bool setInteractable)
     {
-        Debug.Log($"[FadeCanvasGroup] Attempting to fade GameObject: {gameObjectName}");
+      //  Debug.Log($"[FadeCanvasGroup] Attempting to fade GameObject: {gameObjectName}");
 
         GameObject obj = GameObject.Find(gameObjectName);
         if (obj == null)
@@ -21,7 +21,7 @@ public class UIUtils : MonoBehaviour
             yield break;
         }
 
-        Debug.Log($"[FadeCanvasGroup] Starting fade: {gameObjectName} from {canvasGroup.alpha} to {targetAlpha} over {duration}s");
+       // Debug.Log($"[FadeCanvasGroup] Starting fade: {gameObjectName} from {canvasGroup.alpha} to {targetAlpha} over {duration}s");
 
         float startAlpha = canvasGroup.alpha;
         float time = 0f;
@@ -38,7 +38,7 @@ public class UIUtils : MonoBehaviour
         canvasGroup.interactable = setInteractable;
         canvasGroup.blocksRaycasts = setInteractable;
 
-        Debug.Log($"[FadeCanvasGroup] Finished fading {gameObjectName} to {targetAlpha}. Interactable: {setInteractable}");
+      //  Debug.Log($"[FadeCanvasGroup] Finished fading {gameObjectName} to {targetAlpha}. Interactable: {setInteractable}");
     }
 
 }
