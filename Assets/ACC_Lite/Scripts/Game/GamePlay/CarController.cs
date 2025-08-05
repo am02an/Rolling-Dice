@@ -36,6 +36,8 @@ public class CarController : MonoBehaviourPun
 	private float driftGraceTimer = 0f;
 	private float lastDriftEndTime = -10f;
 	private int driftChainCount = 0;
+	public float normalBrakeIntensity = 0.5f;
+	public float fullBrakeIntensity = 2f;
 	public float driftChainThreshold = 2f; // Time allowed between drifts to keep chaining
 	[Header("Track Detaction")]
 	[SerializeField] private LayerMask trackLayerMask; // Assign to "Track" in Inspector
@@ -48,7 +50,8 @@ public class CarController : MonoBehaviourPun
 	[Header("UI Alert")]
 	
 	[SerializeField] private float alertTweenDuration = 0.5f;
-
+	public Light brakeLight_1;
+	public Light brakeLight_2;
 	private bool isOffTrack = false;
 	private Tween alertTween;
 	private float scoreDeductTimer = 0f;
@@ -180,26 +183,52 @@ public class CarController : MonoBehaviourPun
 		int actorNumber = GetComponent<PhotonView>().Owner.ActorNumber;
 		Debug.Log($"This car belongs to Actor {actorNumber}");
 	}
-    /// <summary>
-    /// Update controls of car, from user control (TODO AI control).
-    /// </summary>
-    /// <param name="horizontal">Turn direction</param>
-    /// <param name="vertical">Acceleration</param>
-    /// <param name="brake">Brake</param>
-    public void UpdateControls (float horizontal, float vertical, bool handBrake)
+	/// <summary>
+	/// Update controls of car, from user control (TODO AI control).
+	/// </summary>
+	/// <param name="horizontal">Turn direction</param>
+	/// <param name="vertical">Acceleration</param>
+	/// <param name="brake">Brake</param>
+	// Reference to the brake light
+
+	public void UpdateControls(float horizontal, float vertical, bool handBrake)
 	{
 		float targetSteerAngle = horizontal * MaxSteerAngle;
 
 		if (EnableSteerAngleMultiplier)
 		{
-			targetSteerAngle *= Mathf.Clamp (1 - SpeedInHour / MaxSpeedForMinAngleMultiplier, MinSteerAngleMultiplier, MaxSteerAngleMultiplier);
+			targetSteerAngle *= Mathf.Clamp(1 - SpeedInHour / MaxSpeedForMinAngleMultiplier, MinSteerAngleMultiplier, MaxSteerAngleMultiplier);
 		}
 
-		CurrentSteerAngle = Mathf.MoveTowards (CurrentSteerAngle, targetSteerAngle, Time.deltaTime * SteerAngleChangeSpeed);
-
+		CurrentSteerAngle = Mathf.MoveTowards(CurrentSteerAngle, targetSteerAngle, Time.deltaTime * SteerAngleChangeSpeed);
 		CurrentAcceleration = vertical;
-        InHandBrake = handBrake;
+		InHandBrake = handBrake;
+
+		// ✅ Brake Light Logic
+		if (brakeLight_1 != null &brakeLight_2!=null)
+		{
+			if (handBrake)
+			{
+				brakeLight_1.enabled = true;
+				brakeLight_2.enabled = true;
+				brakeLight_2.intensity = fullBrakeIntensity; // Full glow
+				brakeLight_1.intensity = fullBrakeIntensity; // Full glow
+			}
+			else if (vertical < 0f)
+			{
+				brakeLight_1.enabled = true;
+				brakeLight_2.enabled = true;
+				brakeLight_2.intensity = normalBrakeIntensity; // Dim glow when reversing
+				brakeLight_1.intensity = normalBrakeIntensity; // Dim glow when reversing
+			}
+			else
+			{
+				brakeLight_1.enabled = false; // Turn off
+				brakeLight_2.enabled = false; // Turn off
+			}
+		}
 	}
+
 	public void SetCarMaterialIfNotMaster()
 	{
 		// If in AI Match, skip check

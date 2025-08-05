@@ -56,17 +56,20 @@ public class RC_RPCManager : MonoBehaviourPunCallbacks
         if (PhotonNetwork.IsMasterClient)
         {
             GameController.Instance.spawnedPlayerCount++;
+            Debug.Log("Spawned Player Count: " + GameController.Instance.spawnedPlayerCount);
 
-            if (GameController.Instance.spawnedPlayerCount >= 2)
+            if (GameController.Instance.spawnedPlayerCount >= PhotonNetwork.CurrentRoom.PlayerCount)
             {
                 CountDown();
             }
         }
     }
+
     public void ConfirmPlayers()
     {
         photonView.RPC("ConfirmCarSpawned", RpcTarget.MasterClient);
     }
+
     [PunRPC]
     public void RPC_StartCountdown()
     {

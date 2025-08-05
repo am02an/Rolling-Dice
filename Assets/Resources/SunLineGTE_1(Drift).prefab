@@ -836,7 +836,6 @@ GameObject:
   - component: {fileID: 3651673236216786702}
   - component: {fileID: 4579050069618318806}
   - component: {fileID: 5831408643317198479}
-  - component: {fileID: 769451290001826353}
   - component: {fileID: 2063015842568621792}
   - component: {fileID: 965887319097941654}
   - component: {fileID: 6158794012776848782}
@@ -1095,14 +1094,6 @@ MonoBehaviour:
   aiSteering: 0
   aiThrottle: 1
   aiBrake: 0
---- !u!81 &769451290001826353
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5597272051884591789}
-  m_Enabled: 1
 --- !u!114 &2063015842568621792
 MonoBehaviour:
   m_ObjectHideFlags: 0

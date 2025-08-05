@@ -83,16 +83,17 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
     {
         GameObject carToSpawn;
         Transform spawnPoint;
-
         if (PhotonNetwork.IsMasterClient)
         {
             // Master spawns their own car at master spawn point
             carToSpawn = carPrefab;
             spawnPoint = spawnPointMasterClient;
+            RC_RPCManager.Instance.ConfirmPlayers();
         }
         else
         {
             // Non-master spawns opponent (master)'s car at other player spawn point
+            RC_RPCManager.Instance.ConfirmPlayers();
             carToSpawn = opponentPrefab;
             spawnPoint = spawnPointOtherPlayer;
         }
@@ -103,7 +104,7 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
         int actorNumber = car.GetComponent<PhotonView>().Owner.ActorNumber;
 
         Debug.Log($"[Multiplayer] Spawned car for ActorNumber: {actorNumber} at {spawnPoint.name}");
-        RC_RPCManager.Instance.ConfirmPlayers();
+        //RC_RPCManager.Instance.ConfirmPlayers();
         // Optionally store the instance
         if (PhotonNetwork.LocalPlayer.ActorNumber == actorNumber)
             myCarInstance = car;

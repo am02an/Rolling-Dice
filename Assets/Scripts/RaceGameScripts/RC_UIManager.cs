@@ -235,6 +235,7 @@ public class RC_UIManager : MonoBehaviourPunCallbacks
 
         // Save rewards
         RC_MainMenuUI.Instance.AddCoins(rewardCoins);
+        RC_MainMenuUI.Instance.AddDragPoints((int)totalDriftPoints);
         RC_MainMenuUI.Instance.AddXP(rewardXP);
 
         yield return null;
