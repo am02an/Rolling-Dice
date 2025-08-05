@@ -53,6 +53,12 @@ MonoBehaviour:
   - RPC_ShowDiceResult
   - RPC_UpdatePlayerProgress
   - RPC_SyncDiceSprite
+  - RPC_PlayBackfire
+  - UpdatePlayerScore
+  - UpdateScoreForSide
+  - ShowWinner
+  - UpdateScoreForPlayer
+  - ConfirmCarSpawned
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 1

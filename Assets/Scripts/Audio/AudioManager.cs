@@ -16,6 +16,7 @@ public class AudioManager : MonoBehaviour
     public AudioClip mainBackgroundMusic;
     public AudioClip ClickSound;
     public AudioClip countDown;
+    public AudioClip goSound;
     #endregion
 
     #region SFX Settings
@@ -133,6 +134,14 @@ public class AudioManager : MonoBehaviour
             yield return null;
         }
         source.volume = sfxVolume;
+    }
+    public void PlaySound(AudioClip clip)
+    {
+        if (clip != null)
+        {
+            AudioSource availableSource = GetAvailableSFXSource();
+            availableSource.PlayOneShot(clip);
+        }
     }
     #endregion
 }

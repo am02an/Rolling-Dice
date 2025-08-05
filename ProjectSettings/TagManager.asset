@@ -4,7 +4,8 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Bullet
+  - Car
+  - ResetDriftCollision
   - StartButton
   layers:
   - Default
@@ -15,13 +16,13 @@ TagManager:
   - UI
   - 
   - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Car
+  - Road
+  - BrakingGround
+  - Metal
+  - Rubber
+  - FinishZone
+  - Street
   - 
   - 
   - 

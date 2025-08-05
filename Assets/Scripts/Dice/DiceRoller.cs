@@ -43,7 +43,7 @@ public class DiceRoller : MonoBehaviour
     public List<Transform> tilePoints;
     private int currentTileIndex = 0;
     private static int turnCompletedCount = 0;
-    private CameraController cameraController;
+    private Dice_CameraController cameraController;
 
     #endregion
 
@@ -54,7 +54,7 @@ public class DiceRoller : MonoBehaviour
         isAiControlled = (DiceID == 2 && PhotonManager.Instance.isAIMatch);
         highlightObject?.SetActive(false);
         arrowObject?.gameObject.SetActive(false);
-        cameraController = Camera.main.GetComponent<CameraController>();
+        cameraController = Camera.main.GetComponent<Dice_CameraController>();
         pv = GetComponent<PhotonView>();
     }
 

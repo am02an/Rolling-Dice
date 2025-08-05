@@ -1,6 +1,8 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using UnityEngine.SceneManagement;
+using System.Collections;
 
 /// <summary>
 /// Handles the lobby UI functionality including toggling AI match settings,
@@ -13,7 +15,6 @@ public class LobbyUI : MonoBehaviour
     #region UI References
     [Header("AI Match Toggle")]
     public Toggle aiMatchToggle;
-    public CanvasGroup myPanelCanvasGroup;
     public Image player2Image;
     public TextMeshProUGUI startTimeText;
     #endregion
@@ -26,10 +27,10 @@ public class LobbyUI : MonoBehaviour
 
     private void Start()
     {
-        if (PhotonManager.Instance != null)
-            aiMatchToggle.isOn = PhotonManager.Instance.allowAIMatch;
+        //if (PhotonManager.Instance != null)
+        //    aiMatchToggle.isOn = PhotonManager.Instance.allowAIMatch;
 
-        aiMatchToggle.onValueChanged.AddListener(OnAIMatchToggleChanged);
+        //aiMatchToggle.onValueChanged.AddListener(OnAIMatchToggleChanged);
     }
     #endregion
 
@@ -42,5 +43,38 @@ public class LobbyUI : MonoBehaviour
             Debug.Log("AI Matches Allowed: " + isOn);
         }
     }
+    #endregion
+    #region SetGame
+    public void SetGameToPlay(string gameName)
+    {
+        //UIUtils.FadeCanvasGroup(gamePanel, 0, 0.2f, false);
+        PhotonManager.Instance.stringGameName = gameName;
+        StartMatch();
+    }
+    public void StartMatch()
+    {
+        if (!PhotonManager.Instance.singlePlayermatch)
+        {
+            PhotonManager.Instance.matchMaking.GetComponent<Canvas>().sortingOrder = 2;
+            StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 1, 0.2f, true));
+        }
+        PhotonManager.Instance.StartMatch();
+    }
+    public void MoveToRaceMainMenu()
+    {
+        LoadingScreenManager.Instance.ShowLoadingScreen(false, "RacingMainMenu");
+
+    }
+    public void OffmatchMaking()
+    {
+     StartCoroutine(   PhotonManager.Instance.StopMatchmaking());
+    }
+    public void QuickMatch()
+    {
+
+        SceneManager.LoadScene("RacingGame");
+    }
+   
+
     #endregion
 }

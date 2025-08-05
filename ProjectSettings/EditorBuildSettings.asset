@@ -9,6 +9,14 @@ EditorBuildSettings:
     path: Assets/Scenes/Lobby.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
   - enabled: 1
-    path: Assets/Scenes/MainScene.unity
+    path: Assets/Scenes/RollingDice.unity
     guid: a1fcea46b3e084b408602dbb526ee163
-  m_configObjects: {}
+  - enabled: 1
+    path: Assets/Scenes/RacingGame.unity
+    guid: 44d2773a38df5e44083dca6468c8dba3
+  - enabled: 1
+    path: Assets/Scenes/RacingMainMenu.unity
+    guid: 4b229dd6cf0bd324895276652602268d
+  m_configObjects:
+    com.unity.addressableassets: {fileID: 11400000, guid: a70a1b37f39d7d44f9f8240e3fc578db,
+      type: 2}
