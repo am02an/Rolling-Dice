@@ -976,7 +976,7 @@ MonoBehaviour:
   - {fileID: 6227232275967950912}
   CarConfig:
     MaxSteerAngle: 42
-    DriveType: 2
+    DriveType: 0
     AutomaticGearBox: 1
     MaxMotorTorque: 800
     MotorTorqueFromRpmCurve:
