@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using PlayFab;
 using PlayFab.ClientModels;
 using System;
@@ -6,80 +6,77 @@ using System.Collections.Generic;
 using TMPro;
 using System.Linq;
 
-public class PlayFabLoginManager : MonoBehaviour
+public class PlayFabManager : MonoBehaviour
 {
+    public static PlayFabManager Instance;
     [Header("Login Settings")]
     public TMP_InputField usernameInput;
 
     [Header("Title ID (from PlayFab Game Manager)")]
     public string playFabTitleId = "D0001";
 
+    private void Awake()
+    {
+        Instance = this;
+
+    }
     private void Start()
     {
         if (string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId))
             PlayFabSettings.staticSettings.TitleId = playFabTitleId;
+
+     
     }
 
-    public void OnUsernameSubmit()
+public    void AutoLogin()
     {
-        string customId = usernameInput.text.Trim();
-
-        if (string.IsNullOrEmpty(customId))
-        {
-            Debug.LogWarning("Username is empty.");
-            return;
-        }
-
-        // Step 1: Call CloudScript to check + register username
         PlayFabClientAPI.LoginWithCustomID(new LoginWithCustomIDRequest
         {
             CustomId = SystemInfo.deviceUniqueIdentifier,
-            CreateAccount = true
+            CreateAccount = true,
+            InfoRequestParameters = new GetPlayerCombinedInfoRequestParams
+            {
+                GetPlayerProfile = true
+            }
         },
-        loginResult =>
-        {
-        // Now safe to call CloudScript
-        PlayFabClientAPI.ExecuteCloudScript(new ExecuteCloudScriptRequest
-            {
-                FunctionName = "TryRegisterUsername",
-                FunctionParameter = new { username = customId },
-                GeneratePlayStreamEvent = false
-            },
-            scriptResult =>
-            {
-                var resultDict = scriptResult.FunctionResult as Dictionary<string, object>;
-                if (resultDict != null && resultDict.ContainsKey("success") && (bool)resultDict["success"])
-                {
-                    Debug.Log("Login successful with username: " + customId);
-                // Proceed to load data, UI, etc.
-                SaveInitialDataToCloud();
-                    LoadPlayerData();
-                    StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 0, 0.2f, false));
-                    StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
-                }
-                else
-                {
-                    Debug.LogWarning("Username already exists. Please choose another.");
-                }
-            },
-            error =>
-            {
-                Debug.LogError("CloudScript error: " + error.GenerateErrorReport());
-            });
-        },
-        error =>
-        {
-            Debug.LogError("Initial anonymous login failed: " + error.GenerateErrorReport());
-        });
+ result =>
+ {
+     // Now this will not be null
+     string displayName = result.InfoResultPayload?.PlayerProfile?.DisplayName;
+
+     if (!string.IsNullOrEmpty(displayName))
+     {
+         Debug.Log("User already has a username: " + displayName);
+
+         // Go to Lobby
+         StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 0, 0.2f, false));
+         StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
+     }
+     else
+     {
+         Debug.Log("No username found. Show sign-in panel.");
+
+         // Go to Sign-In
+         StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 0, 0.2f, false));
+         StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 1, 0.2f, true));
+     }
+ },
+ error =>
+ {
+     Debug.LogError("Login failed: " + error.GenerateErrorReport());
+ });
+
     }
+
+
 
 
     private void OnLoginSuccess(LoginResult result)
     {
         Debug.Log("Login successful! PlayFab ID: " + result.PlayFabId);
         LoadPlayerData();
-        StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 0, 0.2f, false));
-        StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
+        //StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 0, 0.2f, false));
+        //StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
 
     }
 

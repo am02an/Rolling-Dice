@@ -116,7 +116,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnConnectedToMaster()
     {
         Debug.Log("Connect to master");
-      StartCoroutine(  UIUtils.FadeCanvasGroup("Popup_SignIn", 1, 0.2f, true));
+      PlayFabManager.Instance.  AutoLogin();
+        //StartCoroutine(  UIUtils.FadeCanvasGroup("Popup_SignIn", 1, 0.2f, true));
         //if (StartButton == null)
         //{
         //    StartButton = GameObject.FindGameObjectWithTag("StartButton");
