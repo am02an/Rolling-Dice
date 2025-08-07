@@ -100,7 +100,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             StartCoroutine(WaitForPhotonConnectionThenJoin());
         }
     }
-
     private IEnumerator WaitForPhotonConnectionThenJoin()
     {
         while (PhotonNetwork.Server != ServerConnection.MasterServer || !PhotonNetwork.IsConnectedAndReady)
@@ -116,32 +115,13 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     public override void OnConnectedToMaster()
     {
         Debug.Log("Connect to master");
-      PlayFabManager.Instance.  AutoLogin();
-        //StartCoroutine(  UIUtils.FadeCanvasGroup("Popup_SignIn", 1, 0.2f, true));
-        //if (StartButton == null)
-        //{
-        //    StartButton = GameObject.FindGameObjectWithTag("StartButton");
-
-        //    if (StartButton != null)
-        //    {
-        //        StartButton.GetComponent<Button>().onClick.AddListener(StartMatch);
-        //    }
-        //    else
-        //    {
-        //        Debug.LogWarning("StartButton (Button_Play) not found in the scene.");
-        //        return;
-        //    }
-        //}
-
-        //StartButton.transform.localScale = Vector3.zero;
-        //StartButton.transform.DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack);
+     
     }
 
     public override void OnJoinRandomFailed(short returnCode, string message)
     {
         PhotonNetwork.CreateRoom(null, new RoomOptions { MaxPlayers = 2 });
     }
-
     public override void OnJoinedRoom()
     {
         IsMasterClient = PhotonNetwork.IsMasterClient;
@@ -173,40 +153,13 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             matchmakingCoroutine = StartCoroutine(WaitForOpponent());
         }
     }
-    private IEnumerator FakeLoadingUntilSceneLoaded(string sceneName)
+
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
     {
-        float progress = 0f;
-
-        // Start loading the scene via Photon
-        PhotonNetwork.LoadLevel(sceneName);
-
-        // Fake progress until scene actually loads
-        while (progress < 1f)
-        {
-            progress += Time.deltaTime * 0.3f; // adjust speed as needed
-            LoadingScreenManager.Instance.UpdateLoadingUI(progress);
-            yield return null;
-        }
-
-        LoadingScreenManager.Instance.UpdateLoadingUI(1f);
+        
     }
-
-    //public override void OnPlayerLeftRoom(Player otherPlayer)
-    //{
-    //    if (PhotonNetwork.IsMasterClient)
-    //    {
-    //        DeclareVictoryToRemainingPlayer();
-    //    }
-    //}
-
-    //private void DeclareVictoryToRemainingPlayer()
-    //{
-    //    if (PhotonNetwork.CurrentRoom.PlayerCount == 1)
-    //    {
-    //        RC_UIManager.Instance.ShowVictory();
-    //    }
-    //}
-    #endregion
+       #endregion
 
     #region Opponent Search
     private IEnumerator WaitForOpponent()
@@ -289,10 +242,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             StartCoroutine(WaitForOpponent()); // Retry
         }
     }
-
-
-
-
     public IEnumerator StopMatchmaking()
     {
         isSearching = false;
@@ -329,8 +278,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
         LobbyUI.Instance.startTimeText.text = "Started waiting for opponent...";
     }
-
-
     private IEnumerator CycleOpponentImages()
     {
         int index = 0;
@@ -341,7 +288,6 @@ public class PhotonManager : MonoBehaviourPunCallbacks
             yield return new WaitForSeconds(spriteChangeInterval);
         }
     }
-
     private IEnumerator SmoothStopPlayerImage()
     {
         Vector2 currentPos = LobbyUI.Instance.player2Image.rectTransform.anchoredPosition;

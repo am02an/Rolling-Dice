@@ -128,7 +128,7 @@ public class DiceRoller : MonoBehaviour
             diceImage.transform.DOPunchScale(Vector3.one * 0.2f, 0.1f, 10, 1f);
 
             // Sync visual dice rolling if needed
-            if (PhotonNetwork.InRoom && !PhotonManager.Instance.isAIMatch && PhotonNetwork.LocalPlayer.ActorNumber == GameManager.Instance.currentTurnActorNumber)
+            if (PhotonNetwork.InRoom && !PhotonManager.Instance.isAIMatch && PhotonNetwork.LocalPlayer.ActorNumber == DC_GameManager.Instance.currentTurnActorNumber)
                 RPCManager.Instance.SendDiceSpriteSync(DiceID, randomIndex + 1, true);
 
             timer += 0.1f;

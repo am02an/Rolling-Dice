@@ -86,8 +86,8 @@ public class UIManager : MonoBehaviour
 
     void InitUI()
     {
-        player1Slider.maxValue = GameManager.Instance.planeCount;
-        player2Slider.maxValue = GameManager.Instance.planeCount;
+        player1Slider.maxValue = DC_GameManager.Instance.planeCount;
+        player2Slider.maxValue = DC_GameManager.Instance.planeCount;
         player1Slider.value = 0;
         player2Slider.value = 0;
         countdownText.text = "";
@@ -177,13 +177,13 @@ public class UIManager : MonoBehaviour
     public void ShowVictory()
     {
         victoryPanel.SetActive(true);
-        GameManager.Instance.BackToLobby();
+        DC_GameManager.Instance.BackToLobby();
     }
 
     public void ShowDefeat()
     {
         defeatPanel.SetActive(true);
-        GameManager.Instance.BackToLobby();
+        DC_GameManager.Instance.BackToLobby();
     }
     #endregion
 }

@@ -25,10 +25,10 @@ public class PlayFabManager : MonoBehaviour
         if (string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId))
             PlayFabSettings.staticSettings.TitleId = playFabTitleId;
 
-     
+        AutoLogin();
     }
 
-public    void AutoLogin()
+    public void AutoLogin()
     {
         PlayFabClientAPI.LoginWithCustomID(new LoginWithCustomIDRequest
         {
@@ -51,11 +51,15 @@ public    void AutoLogin()
          // Go to Lobby
          StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 0, 0.2f, false));
          StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
+         GameManager.Instance.SetState(GameState.GameSelection);
+        SaveManager.Instance. LoadData(displayName);
      }
      else
      {
          Debug.Log("No username found. Show sign-in panel.");
 
+        SaveManager.Instance. LoadData(displayName);
+         GameManager.Instance.SetState(GameState.SignIn);
          // Go to Sign-In
          StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 0, 0.2f, false));
          StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 1, 0.2f, true));

@@ -48,6 +48,8 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        GameManager.Instance.SetState(GameState.InGame);
+
         LoadingScreenManager.Instance.HideLoadingScreen();
         if (PhotonManager.Instance.isAIMatch)
         {
