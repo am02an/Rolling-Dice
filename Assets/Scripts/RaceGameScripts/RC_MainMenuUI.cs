@@ -1,7 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using TMPro;
-
+using UnityEngine.SceneManagement;
 public class RC_MainMenuUI : MonoBehaviour
 {
     public static RC_MainMenuUI Instance;
@@ -27,6 +27,12 @@ public class RC_MainMenuUI : MonoBehaviour
      //   LoadingScreenManager.Instance.ShowLoadingScreen();
         PhotonManager.Instance.singlePlayermatch = true;
         LobbyUI.Instance.SetGameToPlay("RacingGame");
+    }
+    public void StartFreeRoam()
+    {
+        PhotonManager.Instance.isFreeRoam = true;
+        //   LoadingScreenManager.Instance.ShowLoadingScreen();
+        SceneManager.LoadScene("RacingCity");
     }
     public void Start1v1Match()
     {

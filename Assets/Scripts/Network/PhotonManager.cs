@@ -43,6 +43,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     #region Photon Role Flags
     public bool IsMasterClient;
     public bool IsOtherPlayer;
+
+    public bool isFreeRoam { get; internal set; }
     #endregion
 
     #region Unity Callbacks
