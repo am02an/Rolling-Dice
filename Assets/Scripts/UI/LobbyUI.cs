@@ -73,6 +73,12 @@ public class LobbyUI : MonoBehaviour
         GameManager.Instance.SetState(GameState.MainMenu);
         LoadingScreenManager.Instance.ShowLoadingScreen(false, "RacingMainMenu");
     }
+    public void MoveToShooterMainMenu()
+    {
+        GameManager.Instance.SetGame(GameName.ShooterGame);
+        GameManager.Instance.SetState(GameState.MainMenu);
+        LoadingScreenManager.Instance.ShowLoadingScreen(false, "ShooterMainMenu");
+    }
     public void OffmatchMaking()
     {
         GameManager.Instance.SetGame(GameName.None);

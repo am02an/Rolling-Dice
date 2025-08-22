@@ -56,6 +56,7 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
 
         if (PhotonManager.Instance.isFreeRoam)
         {
+          RC_UIManager.Instance.  CanStartRace = true;
             SpawnForFreeRoam();
         }
         else if (PhotonManager.Instance.isAIMatch)
@@ -78,12 +79,12 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
             return;
         }
 
+        // Use PhotonNetwork.Instantiate to spawn the car with ownership set to this player
         GameObject car = Instantiate(freeRoamCarPrefab, freeRoamSpawnPoint.position, freeRoamSpawnPoint.rotation);
         myCarInstance = car;
-
+       
         Debug.Log("[FreeRoam] Spawned free roam car at " + freeRoamSpawnPoint.name);
     }
-
     private float deltaTime;
 
     void Update()

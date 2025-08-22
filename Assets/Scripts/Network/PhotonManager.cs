@@ -132,9 +132,10 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 1f, 0.5f, true));
         if (singlePlayermatch)
         {
+            var gameName = GameManager.Instance.CurrentGame.ToString();
             matchMaking.GetComponent<Canvas>().sortingOrder = -1;
             StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
-            LoadingScreenManager.Instance.ShowLoadingScreen(true, "RacingGame");
+            LoadingScreenManager.Instance.ShowLoadingScreen(true, gameName);
             // Show loading screen
             //LoadingScreenManager.Instance.ShowLoadingScreen();
 

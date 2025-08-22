@@ -17,13 +17,8 @@ MonoBehaviour:
     m_SerializedData: []
   m_GUID: 72d6ef8240f3f6541a0cec0d2b56b8f5
   m_SerializeEntries:
-  - m_GUID: 44d2773a38df5e44083dca6468c8dba3
-    m_Address: RacingGame
-    m_ReadOnly: 0
-    m_SerializedLabels: []
-    FlaggedDuringContentUpdateRestriction: 0
-  - m_GUID: a1fcea46b3e084b408602dbb526ee163
-    m_Address: RollingDice
+  - m_GUID: 0b7e3b77b1fc74b639825b9b8e5ddb81
+    m_Address: Assets/Easy FPS/Model_Animations_Textures/ironSight_addon/Materials/red_dot.mat
     m_ReadOnly: 0
     m_SerializedLabels: []
     FlaggedDuringContentUpdateRestriction: 0

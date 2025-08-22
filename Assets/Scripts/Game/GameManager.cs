@@ -23,7 +23,7 @@ public enum GameName
     MiniGame2,
     Racing,
     Puzzle,
-    Shooter
+    ShooterGame
 }
 
 public class GameManager : MonoBehaviour
