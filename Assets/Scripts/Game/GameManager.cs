@@ -53,6 +53,7 @@ public class GameManager : MonoBehaviour
 
     public void SetGame(GameName game)
     {
+        AudioManager.Instance.StopBackgroundMusic();
         currentGame = game;
         Debug.Log($"Game set to: {game}");
     }

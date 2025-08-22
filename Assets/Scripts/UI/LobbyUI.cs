@@ -28,6 +28,11 @@ public class LobbyUI : MonoBehaviour
 
     private void Start()
     {
+        if(GameManager.Instance.CurrentGame==GameName.None&&PhotonManager.Instance.IsConnectWithMaster)
+        {
+            StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
+
+        }
         //if (PhotonManager.Instance != null)
         //    aiMatchToggle.isOn = PhotonManager.Instance.allowAIMatch;
 
@@ -48,6 +53,7 @@ public class LobbyUI : MonoBehaviour
     #region SetGame
     public void SetGameToPlay(string gameName)
     {
+        
         if (Enum.TryParse(gameName, true, out GameName parsedGameType))
         {
 

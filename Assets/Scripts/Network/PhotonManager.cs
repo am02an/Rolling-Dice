@@ -43,7 +43,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     #region Photon Role Flags
     public bool IsMasterClient;
     public bool IsOtherPlayer;
-
+    public bool IsConnectWithMaster;
     public bool isFreeRoam { get; internal set; }
     #endregion
 
@@ -116,7 +116,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
     #region Photon Callbacks
     public override void OnConnectedToMaster()
     {
-        Debug.Log("Connect to master");
+        IsConnectWithMaster = true;        Debug.Log("Connect to master");
      
     }
 
