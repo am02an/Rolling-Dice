@@ -48,6 +48,7 @@ Place images under `Assets/RollingDice/Images/` and reference them:
 ![Lobby](Assets/RollingDice/Images/lobby.png)
 ![Gameplay](Assets/RollingDice/Images/gameplay.png)
 
+
 ---
 
 ## 🚗 Car Drift (Arcade)
@@ -83,7 +84,7 @@ Add images under `Assets/CarDrift/Images/`:
 
 ![Garage](Assets/CarDrift/Images/garage.png)
 ![Track Gameplay](Assets/CarDrift/Images/drift_turn.png)
-![Ghost Replay](Assets/CarDrift/Images/ghost.png)
+
 
 ---
 
@@ -119,7 +120,7 @@ Add images under `Assets/Shooter/Images/`:
 
 ![Main Menu](Assets/Shooter/Images/menu.png)
 ![Wave Combat](Assets/Shooter/Images/combat.png)
-![Loot Drop](Assets/Shooter/Images/loot.png)
+
 
 ---
 
