@@ -45,27 +45,43 @@ public class UserControl : MonoBehaviour
             Vertical = aiThrottle;
             Brake = aiBrake;
 
-            // Apply AI control to car
+            ControlledCar.UpdateControls(Horizontal, Vertical, Brake);
+        }
+        else if (PhotonManager.Instance.isFreeRoam)
+        {
+            // FreeRoam mode - always update controls regardless of race start or Photon ownership
+            if (CurrentUIControl != null && CurrentUIControl.ControlInUse)
+            {
+                Horizontal = CurrentUIControl.GetHorizontalAxis;
+                Vertical = CurrentUIControl.GetVerticalAxis;
+                // Optionally set Brake if you have it in UI controls for FreeRoam
+               // Brake = CurrentUIControl.GetBrakeButtonState ? true : false;
+            }
+            else
+            {
+                Horizontal = Input.GetAxis("Horizontal");
+                Vertical = Input.GetAxis("Vertical");
+                Brake = Input.GetButton("Jump");
+            }
+
             ControlledCar.UpdateControls(Horizontal, Vertical, Brake);
         }
         else if (photonView.IsMine && RC_UIManager.Instance.CanStartRace)
         {
             if (CurrentUIControl != null && CurrentUIControl.ControlInUse)
             {
-                // Mobile control
                 Horizontal = CurrentUIControl.GetHorizontalAxis;
                 Vertical = CurrentUIControl.GetVerticalAxis;
             }
             else
             {
-                // Standard input (keyboard/gamepad)
                 Horizontal = Input.GetAxis("Horizontal");
                 Vertical = Input.GetAxis("Vertical");
                 Brake = Input.GetButton("Jump");
             }
 
-            // Apply control for controlled car
             ControlledCar.UpdateControls(Horizontal, Vertical, Brake);
         }
     }
+
 }

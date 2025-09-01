@@ -7,15 +7,21 @@ TagManager:
   - Car
   - ResetDriftCollision
   - StartButton
+  - Weapon
+  - SecondCamera
+  - BulletSpawn
+  - LevelPart
+  - Dummie
+  - Castle
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
-  - 
-  - 
+  - Weapon
+  - Environment
   - Car
   - Road
   - BrakingGround

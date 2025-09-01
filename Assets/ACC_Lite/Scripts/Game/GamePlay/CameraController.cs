@@ -33,7 +33,7 @@ public class CameraController :Singleton<CameraController>
 			}
 			Vector3 result = TargetCar.RB.velocity * ActivePreset.VelocityMultiplier;
 			result += TargetCar.transform.position;
-			result.y = 0;
+			result.y += ActivePreset.HeightOffset;
 			return result;
 		}
 	}
@@ -108,6 +108,8 @@ public class CameraController :Singleton<CameraController>
 
 		public bool EnableRotation;
 		public float MinDistanceForRotation = 0.1f;     //Min distance for potation, To avoid uncontrolled rotation.
-		public float SetRotationSpeed = 1;              //Change rotation speed.
+		public float SetRotationSpeed = 1;
+		public float HeightOffset;
+		//Change rotation speed.
 	}
 }

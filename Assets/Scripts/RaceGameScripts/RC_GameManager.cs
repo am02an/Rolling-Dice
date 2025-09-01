@@ -37,6 +37,9 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
     public TextMeshProUGUI WinDptext;
     public TextMeshProUGUI WinXpText;
 
+    [Header("Free Roam Settings")]
+    public Transform freeRoamSpawnPoint; // assign in inspector
+    public GameObject freeRoamCarPrefab;
 
     private void Awake()
     {
@@ -48,8 +51,15 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        GameManager.Instance.SetState(GameState.InGame);
         LoadingScreenManager.Instance.HideLoadingScreen();
-        if (PhotonManager.Instance.isAIMatch)
+
+        if (PhotonManager.Instance.isFreeRoam)
+        {
+          RC_UIManager.Instance.  CanStartRace = true;
+            SpawnForFreeRoam();
+        }
+        else if (PhotonManager.Instance.isAIMatch)
         {
             SpawnForAIMatch();
         }
@@ -59,9 +69,22 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
         }
 
         GameController.Instance.Initcars();
-       // Common init
     }
 
+    void SpawnForFreeRoam()
+    {
+        if (freeRoamSpawnPoint == null || freeRoamCarPrefab == null)
+        {
+            Debug.LogWarning("[FreeRoam] Spawn point or car prefab not set.");
+            return;
+        }
+
+        // Use PhotonNetwork.Instantiate to spawn the car with ownership set to this player
+        GameObject car = Instantiate(freeRoamCarPrefab, freeRoamSpawnPoint.position, freeRoamSpawnPoint.rotation);
+        myCarInstance = car;
+       
+        Debug.Log("[FreeRoam] Spawned free roam car at " + freeRoamSpawnPoint.name);
+    }
     private float deltaTime;
 
     void Update()

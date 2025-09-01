@@ -34,7 +34,7 @@ public class RPCManager : MonoBehaviourPun
     {
         List<TileData> p1 = JsonUtility.FromJson<TrackWrapper>(jsonP1).tiles;
         List<TileData> p2 = JsonUtility.FromJson<TrackWrapper>(jsonP2).tiles;
-        GameManager.Instance.OnTrackDataReceived(p1, p2);
+        DC_GameManager.Instance.OnTrackDataReceived(p1, p2);
     }
 
     #endregion
@@ -56,7 +56,7 @@ public class RPCManager : MonoBehaviourPun
     void RPC_SetTurn(int actorNumber)
     {
         Debug.Log($"Turn Changed To Actor: {actorNumber}");
-        GameManager.Instance.OnTurnChanged(actorNumber);
+        DC_GameManager.Instance.OnTurnChanged(actorNumber);
     }
 
     #endregion
@@ -156,7 +156,7 @@ public class RPCManager : MonoBehaviourPun
     [PunRPC]
     public void RPC_StartCountdown()
     {
-        GameManager.Instance.StartCoroutine(UIManager.Instance.StartCountdown());
+        DC_GameManager.Instance.StartCoroutine(UIManager.Instance.StartCountdown());
     }
 
     #endregion

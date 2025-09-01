@@ -55,6 +55,27 @@ public class CarSoundController :MonoBehaviour
 			{
 				SlipSource.Stop();
 			}
+        }
+        else if(PhotonManager.Instance.isFreeRoam)
+        {
+			EngineSource.pitch = (EngineRPM / MaxRPM) + PitchOffset;
+
+			//Slip sound logic
+			if (CarController.CurrentMaxSlip > MinSlipSound
+			)
+			{
+				if (!SlipSource.isPlaying)
+				{
+					SlipSource.Play();
+				}
+				var slipVolumeProcent = CarController.CurrentMaxSlip / MaxSlipForSound;
+				SlipSource.volume = slipVolumeProcent * 0.5f;
+				SlipSource.pitch = Mathf.Clamp(slipVolumeProcent, 0.75f, 1);
+			}
+			else
+			{
+				SlipSource.Stop();
+			}
 		}
 	}
 

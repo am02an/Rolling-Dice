@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using TMPro;
@@ -12,10 +12,14 @@ public class LoadingScreenManager : MonoBehaviour
     public Canvas loadingCanvas;
     public Slider loadingSlider;
     public TextMeshProUGUI percentageText;
+    public GameObject mainLoadinPanel;
+    public Image gameLogoImage;
+    public GameObject defualtLoading;
+    public Sprite shooterGameSprite;
+    public Sprite racingGameSprite;
 
     [Header("Settings")]
     public float loadingDuration = 2.5f; // between 2-3 seconds
-
     private void Awake()
     {
         Instance = this;
@@ -64,6 +68,7 @@ public class LoadingScreenManager : MonoBehaviour
 
     public void ShowLoadingScreen(bool isPhotonScene, string sceneName)
     {
+        SetGameSprite(sceneName);
         loadingCanvas.enabled = true;
         loadingCanvas.sortingOrder = 999;
 
@@ -120,11 +125,36 @@ public class LoadingScreenManager : MonoBehaviour
 
         loadingCanvas.enabled = false;
     }
-
     public void UpdateLoadingUI(float progress)
     {
         loadingSlider.value = progress;
         percentageText.text = Mathf.RoundToInt(progress * 100f) + "%";
+    }
+    private void SetGameSprite(string gameName)
+    {
+        if (gameLogoImage == null) return;
+
+        switch (gameName)
+        {
+            case "RacingGame":
+            case "RacingMainMenu": // ✅ Both will use this block
+                defualtLoading.SetActive(false);
+                mainLoadinPanel.gameObject.SetActive(true);
+                gameLogoImage.sprite = racingGameSprite;
+                break;
+
+            case "ShooterGame":
+            case "ShooterMainMenu": // ✅ You can add multiple names here too
+                defualtLoading.SetActive(false);
+                mainLoadinPanel.gameObject.SetActive(true);
+                gameLogoImage.sprite = shooterGameSprite;
+                break;
+
+            default:
+                mainLoadinPanel.gameObject.SetActive(false);
+                defualtLoading.SetActive(true);
+                break;
+        }
     }
 
 }

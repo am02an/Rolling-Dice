@@ -180,8 +180,8 @@ public class CarController : MonoBehaviourPun
     private void Start()
     {
 		SetCarMaterialIfNotMaster();
-		int actorNumber = GetComponent<PhotonView>().Owner.ActorNumber;
-		Debug.Log($"This car belongs to Actor {actorNumber}");
+		//int actorNumber = GetComponent<PhotonView>().Owner.ActorNumber;
+		//Debug.Log($"This car belongs to Actor {actorNumber}");
 	}
 	/// <summary>
 	/// Update controls of car, from user control (TODO AI control).
