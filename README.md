@@ -119,7 +119,7 @@ Add images under `Assets/CarDrift/Images/`:
 Add images under `Assets/Shooter/Images/`:
 
 ![Main Menu](Assets/Shooter/Images/menu.png)
-![Wave Combat](Assets/Shooter/Images/combat.png)
+
 
 
 ---
