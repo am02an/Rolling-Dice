@@ -83,7 +83,7 @@ Place images under `Assets/RollingDice/Images/` and reference them:
 Add images under `Assets/CarDrift/Images/`:
 
 ![Garage](Assets/CarDrift/Images/garage.png)
-![Track Gameplay](Assets/CarDrift/Images/drift_turn.png)
+
 
 
 ---
