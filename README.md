@@ -84,7 +84,7 @@ Add images under `Assets/CarDrift/Images/`:
 
 ![Garage](Assets/CarDrift/Images/garage.png)
 ![Track Gameplay](Assets/CarDrift/Images/drift_turn.png)
-![Ghost Replay](Assets/CarDrift/Images/ghost.png)
+
 
 ---
 
@@ -120,7 +120,7 @@ Add images under `Assets/Shooter/Images/`:
 
 ![Main Menu](Assets/Shooter/Images/menu.png)
 ![Wave Combat](Assets/Shooter/Images/combat.png)
-![Loot Drop](Assets/Shooter/Images/loot.png)
+
 
 ---
 
