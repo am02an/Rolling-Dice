@@ -1,13 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-
+using TMPro;
 public class MapNavigator : MonoBehaviour
 {
     public RectTransform playerIcon;   // UI arrow icon
     public Transform player;           // Player in world
     public float mapWidth = 100f;      // World size (X or Z axis)
     public RectTransform mapBar;       // UI map bar
-
+    public TextMeshProUGUI compassText;
     void Update()
     {
         // --- POSITION ---
@@ -28,25 +28,27 @@ public class MapNavigator : MonoBehaviour
 
         // Apply rotation to UI arrow
         playerIcon.localRotation = Quaternion.Euler(0, 0, -angle);
+        HandleDirection();
     }
     public RawImage compassImage; // Your navigation bar image
 
     [Header("Compass Settings")]
     public float scrollSpeed = 0.002f; // Adjust to fit the image size
 
-   
-    public void handleDirection()
-    {
-        if (player == null || compassImage == null) return;
 
-        // Get player’s Y rotation (heading)
+    private string[] directions = { "N", "NE", "E", "SE", "S", "SW", "W", "NW" };
+
+    public void HandleDirection()
+    {
+        if (player == null || compassText == null) return;
+
+        // Get player's Y rotation (heading)
         float playerRotation = player.eulerAngles.y;
 
-        // Convert rotation into UV offset
-        float offsetX = playerRotation * scrollSpeed;
+        // Divide 360 degrees into 8 slices (45° each)
+        int index = Mathf.RoundToInt(playerRotation / 45f) % 8;
 
-        // Scroll only X axis of the RawImage
-        compassImage.uvRect = new Rect(offsetX, 0, 1, 1);
-
+        // Update text
+        compassText.text = directions[index];
     }
 }
