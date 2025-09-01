@@ -47,7 +47,7 @@ Place images under `Assets/RollingDice/Images/` and reference them:
 
 ![Lobby](Assets/RollingDice/Images/lobby.png)
 ![Gameplay](Assets/RollingDice/Images/gameplay.png)
-![Shooter](Assets/RollingDice/Images/shooter.png)`
+
 
 ---
 
