@@ -153,7 +153,7 @@ Educational & prototyping use. Modify and extend freely. Attribution appreciated
 **Aman Chauhan**
 Unity Developer — Multiplayer • AI • Firebase • Web3 • Gameplay Systems
 
-* Email: [your.email@example.com](mailto:amanchauhan0202@gmail.com)
+* Email: [Aman's mail](mailto:amanchauhan0202@gmail.com)
 
 
 > Replace contact links and drop real screenshots into the indicated `Images/` folders for a polished portfolio README.
