@@ -61,6 +61,8 @@ public class PhotonManager : MonoBehaviourPunCallbacks
 
     private void Start()
     {
+        PhotonNetwork.SendRate = 60;
+        PhotonNetwork.SerializationRate = 60;
         StartButton.transform.localScale = Vector3.zero;
         StartCoroutine(ShowStartButtonWhenReady());
         PhotonNetwork.AutomaticallySyncScene = true;

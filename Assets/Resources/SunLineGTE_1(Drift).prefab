@@ -1032,6 +1032,8 @@ MonoBehaviour:
   maxDriftAngle: 45
   driftPointMultiplier: 100
   driftGraceTime: 2
+  normalBrakeIntensity: 0.5
+  fullBrakeIntensity: 2
   driftChainThreshold: 2
   trackLayerMask:
     serializedVersion: 2
@@ -1042,6 +1044,8 @@ MonoBehaviour:
   scorePenalty: 5
   penaltyInterval: 5
   alertTweenDuration: 0.5
+  brakeLight_1: {fileID: 0}
+  brakeLight_2: {fileID: 0}
 --- !u!114 &3651673236216786702
 MonoBehaviour:
   m_ObjectHideFlags: 0
