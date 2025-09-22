@@ -22,8 +22,14 @@ public class LoadingScreenManager : MonoBehaviour
     public float loadingDuration = 2.5f; // between 2-3 seconds
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
         Instance = this;
-        DontDestroyOnLoad(this.gameObject);
+        DontDestroyOnLoad(gameObject);
     }
     private void Start()
     {
@@ -137,6 +143,7 @@ public class LoadingScreenManager : MonoBehaviour
         switch (gameName)
         {
             case "RacingGame":
+            case "RacingCity":
             case "RacingMainMenu": // ✅ Both will use this block
                 defualtLoading.SetActive(false);
                 mainLoadinPanel.gameObject.SetActive(true);

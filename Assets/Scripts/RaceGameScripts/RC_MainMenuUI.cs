@@ -11,8 +11,9 @@ public class RC_MainMenuUI : BaseMainMenuUI
         base.Awake();
         Instance = this;
     }
-    private void Start()
+   protected override void Start()
     {
+        base.Start();
         PhotonManager.Instance.singlePlayermatch = false;
     }
     protected override void UpdateUI()

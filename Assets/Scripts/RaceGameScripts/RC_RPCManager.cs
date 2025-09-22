@@ -100,13 +100,13 @@ public class RC_RPCManager : MonoBehaviourPunCallbacks
         {
             // Score belongs to the MasterClient → always show on left
             leftPlayerScoreText.text = score.ToString();
-            Debug.Log($"[ScoreUI] MasterClient score updated: {score}");
+            //Debug.Log($"[ScoreUI] MasterClient score updated: {score}");
         }
         else
         {
             // Score belongs to the non-master player → always show on right
             rightPlayerScoreText.text = score.ToString();
-            Debug.Log($"[ScoreUI] Other player's score updated: {score}");
+            //Debug.Log($"[ScoreUI] Other player's score updated: {score}");
         }
 
         StoreScore(actorNumber, score);

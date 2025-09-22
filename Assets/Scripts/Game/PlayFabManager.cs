@@ -3,23 +3,36 @@ using PlayFab;
 using PlayFab.ClientModels;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 using TMPro;
-using System.Linq;
+using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayFabManager : MonoBehaviour
 {
     public static PlayFabManager Instance;
+
     [Header("Login Settings")]
     public TMP_InputField usernameInput;
 
     [Header("Title ID (from PlayFab Game Manager)")]
     public string playFabTitleId = "D0001";
 
+    private string playFabId; // store for later use
+    [Header("Loader UI")]
+    [SerializeField] private GameObject loader;
+    [SerializeField] private Image loaderFill; // Image type must be "Filled", Fill Method = Radial360
+
+    [Header("Scene Settings")]
+    [SerializeField] private string sceneToLoad = "RacingMainMenu";
+    [SerializeField] private float minFillSpeed = 0.2f;
+    [SerializeField] private float maxFillSpeed = 0.5f;
+    [SerializeField] private float smoothTransitionTime = 0.5f;
     private void Awake()
     {
         Instance = this;
-
     }
+
     private void Start()
     {
         if (string.IsNullOrEmpty(PlayFabSettings.staticSettings.TitleId))
@@ -39,54 +52,114 @@ public class PlayFabManager : MonoBehaviour
                 GetPlayerProfile = true
             }
         },
- result =>
- {
-     // Now this will not be null
-     string displayName = result.InfoResultPayload?.PlayerProfile?.DisplayName;
+        result =>
+        {
+            playFabId = result.PlayFabId;
 
-     if (!string.IsNullOrEmpty(displayName))
-     {
-         Debug.Log("User already has a username: " + displayName);
+            string displayName = result.InfoResultPayload?.PlayerProfile?.DisplayName;
 
-         // Go to Lobby
-         StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 0, 0.2f, false));
-         StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
-         GameManager.Instance.SetState(GameState.GameSelection);
-        SaveManager.Instance. LoadData(displayName);
-     }
-     else
-     {
-         Debug.Log("No username found. Show sign-in panel.");
+            if (!string.IsNullOrEmpty(displayName))
+            {
+                Debug.Log("User already has a username: " + displayName);
 
-        SaveManager.Instance. LoadData(displayName);
-         GameManager.Instance.SetState(GameState.SignIn);
-         // Go to Sign-In
-         StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 0, 0.2f, false));
-         StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 1, 0.2f, true));
-     }
- },
- error =>
- {
-     Debug.LogError("Login failed: " + error.GenerateErrorReport());
- });
+                // Load data
+                SaveManager.Instance.LoadData(displayName);
+                GameManager.Instance.SetState(GameState.MainMenu);
 
+                // Show lobby
+                StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 0, 0.2f, false));
+                //StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
+                StartCoroutine(WaitForLoadTheScene());
+            }
+            else
+            {
+                Debug.Log("No username found. Show sign-in panel.");
+                SaveManager.Instance.LoadData(null);
+
+                // Show sign-in panel
+                GameManager.Instance.SetState(GameState.SignIn);
+                StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 0, 0.2f, false));
+                StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 1, 0.2f, true));
+            }
+        },
+        error =>
+        {
+            Debug.LogError("Login failed: " + error.GenerateErrorReport());
+        });
     }
 
-
-
-
-    private void OnLoginSuccess(LoginResult result)
+    private IEnumerator WaitForLoadTheScene()
     {
-        Debug.Log("Login successful! PlayFab ID: " + result.PlayFabId);
-        LoadPlayerData();
-        //StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 0, 0.2f, false));
-        //StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
+        loader.SetActive(true);
+        loaderFill.fillAmount = 0f;
 
+        float fillSpeed = UnityEngine.Random.Range(minFillSpeed, maxFillSpeed); // random fill speed
+
+        // Fill the circle
+        while (loaderFill.fillAmount < 1f)
+        {
+            loaderFill.fillAmount += fillSpeed * Time.deltaTime;
+            yield return null;
+        }
+
+        // Smooth transition after fill complete
+        yield return StartCoroutine(SmoothSceneTransition());
+
+        SceneManager.LoadScene(sceneToLoad);
     }
 
-    private void OnLoginFailure(PlayFabError error)
+    private IEnumerator SmoothSceneTransition()
     {
-        Debug.LogError("Login failed: " + error.GenerateErrorReport());
+        // Optional fade-out effect for loader (smooth transition)
+        CanvasGroup cg = loader.GetComponent<CanvasGroup>();
+        if (cg == null)
+        {
+            cg = loader.AddComponent<CanvasGroup>();
+            cg.alpha = 1f;
+        }
+
+        float t = 0;
+        while (t < smoothTransitionTime)
+        {
+            t += Time.deltaTime;
+            cg.alpha = Mathf.Lerp(1f, 0f, t / smoothTransitionTime);
+            yield return null;
+        }
+    }
+    /// <summary>
+    /// Called by UI button when user enters a name and presses "Confirm".
+    /// </summary>
+    public void SubmitUsername()
+    {
+        if (string.IsNullOrEmpty(usernameInput.text))
+        {
+            Debug.LogWarning("Username cannot be empty.");
+            return;
+        }
+
+        var request = new UpdateUserTitleDisplayNameRequest
+        {
+            DisplayName = usernameInput.text
+        };
+
+        PlayFabClientAPI.UpdateUserTitleDisplayName(request, result =>
+        {
+            Debug.Log("Username saved: " + result.DisplayName);
+
+            // Save initial data if first-time user
+            SaveInitialDataToCloud();
+
+            // Go to lobby
+            StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 0, 0.2f, false));
+            StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
+            GameManager.Instance.SetState(GameState.GameSelection);
+
+            SaveManager.Instance.LoadData(result.DisplayName);
+        },
+        error =>
+        {
+            Debug.LogError("Failed to save username: " + error.GenerateErrorReport());
+        });
     }
 
     private void SaveInitialDataToCloud()
@@ -100,14 +173,9 @@ public class PlayFabManager : MonoBehaviour
             }
         };
 
-        PlayFabClientAPI.UpdateUserData(request, result =>
-        {
-            Debug.Log("Initial data saved to cloud.");
-        },
-        error =>
-        {
-            Debug.LogError("Failed to save data: " + error.GenerateErrorReport());
-        });
+        PlayFabClientAPI.UpdateUserData(request,
+        result => Debug.Log("Initial data saved to cloud."),
+        error => Debug.LogError("Failed to save data: " + error.GenerateErrorReport()));
     }
 
     private void LoadPlayerData()
@@ -125,12 +193,10 @@ public class PlayFabManager : MonoBehaviour
                 SaveInitialDataToCloud();
             }
         },
-        error =>
-        {
-            Debug.LogError("Failed to load user data: " + error.GenerateErrorReport());
-        });
+        error => Debug.LogError("Failed to load user data: " + error.GenerateErrorReport()));
     }
 }
+
 [Serializable]
 public class UsernameListWrapper
 {

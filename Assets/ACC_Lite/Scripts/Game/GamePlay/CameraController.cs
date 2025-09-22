@@ -42,7 +42,7 @@ public class CameraController :Singleton<CameraController>
 	{
 		CamerasPreset.ForEach (c => c.CameraHolder.SetActive (false));
 		UpdateActiveCamera ();
-
+		ActivePreset.CameraHolder.transform.rotation = Quaternion.Euler(0, 0, 0);
 		if (NextCameraButton)
 		{
 			NextCameraButton.onClick.AddListener (SetNextCamera);
@@ -97,6 +97,7 @@ public class CameraController :Singleton<CameraController>
 			Quaternion rotation = Quaternion.LookRotation (TargetPoint - transform.position, Vector3.up);
 			ActivePreset.CameraHolder.rotation = rotation;
 		}
+		
 	}
 
 	[System.Serializable]

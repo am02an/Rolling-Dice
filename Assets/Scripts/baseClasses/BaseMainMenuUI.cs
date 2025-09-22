@@ -17,7 +17,8 @@ public abstract class BaseMainMenuUI : MonoBehaviour
 
     protected virtual void Start()
     {
-        GameManager.Instance.SetState(GameState.MainMenu);
+        Debug.Log("UpdatingUI");
+       // GameManager.Instance.SetState(GameState.MainMenu);
         UpdateUI();
     }
 

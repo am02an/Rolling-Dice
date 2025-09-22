@@ -82,7 +82,7 @@ public class RC_GameManager : MonoBehaviourPunCallbacks
         // Use PhotonNetwork.Instantiate to spawn the car with ownership set to this player
         GameObject car = Instantiate(freeRoamCarPrefab, freeRoamSpawnPoint.position, freeRoamSpawnPoint.rotation);
         myCarInstance = car;
-       
+        car.transform.position = Vector3.forward*2;
         Debug.Log("[FreeRoam] Spawned free roam car at " + freeRoamSpawnPoint.name);
     }
     private float deltaTime;
