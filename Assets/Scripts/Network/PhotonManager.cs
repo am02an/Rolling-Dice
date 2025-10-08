@@ -282,6 +282,7 @@ public class PhotonManager : MonoBehaviourPunCallbacks
         // Hide loading screen if it's still on
         StartCoroutine(UIUtils.FadeCanvasGroup("Play_Battle", 0f, 0.5f, false));
         LobbyUI.Instance.startTimeText.text = "Started waiting for opponent...";
+        AudioManager.Instance.PlayBackgroundMusic();
     }
     private IEnumerator CycleOpponentImages()
     {

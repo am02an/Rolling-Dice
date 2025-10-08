@@ -91,22 +91,26 @@ public class PlayFabManager : MonoBehaviour
     private IEnumerator WaitForLoadTheScene()
     {
         loader.SetActive(true);
-        loaderFill.fillAmount = 0f;
+        loaderFill.fillAmount = 1f; // start full
 
-        float fillSpeed = UnityEngine.Random.Range(minFillSpeed, maxFillSpeed); // random fill speed
+        float duration = 3f; // total time in seconds
+        float elapsed = 0f;
 
-        // Fill the circle
-        while (loaderFill.fillAmount < 1f)
+        while (elapsed < duration)
         {
-            loaderFill.fillAmount += fillSpeed * Time.deltaTime;
+            elapsed += Time.deltaTime;
+            loaderFill.fillAmount = Mathf.Lerp(1f, 0f, elapsed / duration); // interpolate from 1 to 0
             yield return null;
         }
 
-        // Smooth transition after fill complete
+        loaderFill.fillAmount = 0f; // ensure it's exactly 0 at the end
+
+        // Optional smooth transition
         yield return StartCoroutine(SmoothSceneTransition());
 
         SceneManager.LoadScene(sceneToLoad);
     }
+
 
     private IEnumerator SmoothSceneTransition()
     {
@@ -148,13 +152,13 @@ public class PlayFabManager : MonoBehaviour
 
             // Save initial data if first-time user
             SaveInitialDataToCloud();
-
             // Go to lobby
             StartCoroutine(UIUtils.FadeCanvasGroup("Popup_SignIn", 0, 0.2f, false));
-            StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
-            GameManager.Instance.SetState(GameState.GameSelection);
-
+            //StartCoroutine(UIUtils.FadeCanvasGroup("Lobby", 1, 0.2f, true));
             SaveManager.Instance.LoadData(result.DisplayName);
+            GameManager.Instance.SetState(GameState.MainMenu);
+            StartCoroutine(WaitForLoadTheScene());
+
         },
         error =>
         {

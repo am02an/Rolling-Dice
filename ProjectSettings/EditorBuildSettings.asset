@@ -8,9 +8,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/IMP_SCENES/Lobby.unity
     guid: 9fc0d4010bbf28b4594072e72b8655ab
-  - enabled: 0
-    path: Assets/Scenes/RollingDice.unity
-    guid: a1fcea46b3e084b408602dbb526ee163
   - enabled: 1
     path: Assets/Scenes/IMP_SCENES/RacingGame.unity
     guid: 44d2773a38df5e44083dca6468c8dba3
@@ -20,12 +17,6 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/IMP_SCENES/RacingCity.unity
     guid: a70584898fd5452eb2d067b9ce158406
-  - enabled: 0
-    path: Assets/Scenes/ShooterGame.unity
-    guid: a0621ff5f563fb946a85f1d8ba2ed130
-  - enabled: 0
-    path: Assets/Scenes/ShooterMainMenu.unity
-    guid: ce5fe83c16688994c937faf5efa11be0
   m_configObjects:
     com.unity.addressableassets: {fileID: 11400000, guid: a70a1b37f39d7d44f9f8240e3fc578db,
       type: 2}

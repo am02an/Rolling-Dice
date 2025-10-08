@@ -27,7 +27,7 @@ Transform:
   m_GameObject: {fileID: 337900069329834601}
   serializedVersion: 2
   m_LocalRotation: {x: 0.14043657, y: -0, z: -0, w: 0.9900897}
-  m_LocalPosition: {x: 0.572, y: 0.677, z: 2.021}
+  m_LocalPosition: {x: 0.572, y: 0.72999996, z: 2.0359993}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1042,11 +1042,11 @@ MonoBehaviour:
     MaxBrakeTorque: 2000
     EnableSteerAngleMultiplier: 1
     MinSteerAngleMultiplier: 0.05
-    MaxSteerAngleMultiplier: 1
+    MaxSteerAngleMultiplier: 0.7
     MaxSpeedForMinAngleMultiplier: 250
     SteerAngleChangeSpeed: 240
     MinSpeedForSteerHelp: 20
-    HelpSteerPower: 0.8
+    HelpSteerPower: 0.6
     OppositeAngularVelocityHelpPower: 0.2
     PositiveAngularVelocityHelpPower: -0.1
     MaxAngularVelocityHelpAngle: 90
@@ -1541,7 +1541,7 @@ Transform:
   m_GameObject: {fileID: 6556913213005897124}
   serializedVersion: 2
   m_LocalRotation: {x: 0.14043657, y: -0, z: -0, w: 0.9900897}
-  m_LocalPosition: {x: -0.531, y: 0.67, z: 2.045}
+  m_LocalPosition: {x: -0.531, y: 0.723, z: 2.06}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

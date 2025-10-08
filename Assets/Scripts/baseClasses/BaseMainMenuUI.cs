@@ -17,8 +17,11 @@ public abstract class BaseMainMenuUI : MonoBehaviour
 
     protected virtual void Start()
     {
-        Debug.Log("UpdatingUI");
-       // GameManager.Instance.SetState(GameState.MainMenu);
+
+        AudioManager.Instance.SetBGMVolume(0.7f);
+        AudioManager.Instance.PlayBackgroundMusic();
+
+        // GameManager.Instance.SetState(GameState.MainMenu);
         UpdateUI();
     }
 
@@ -42,8 +45,11 @@ public abstract class BaseMainMenuUI : MonoBehaviour
 
     public virtual void StartFreeRoam()
     {
+        AudioManager.Instance.PlaySFX(AudioManager.Instance.ClickSound);
+        AudioManager.Instance.SetBGMVolume(0.2f);
         PhotonManager.Instance.isFreeRoam = true;
         LoadingScreenManager.Instance.ShowLoadingScreen(true,"RacingCity");
+
         LoadScene("RacingCity");
     }
     public virtual void MoveToSelectionScene()
